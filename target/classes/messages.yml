@@ -1,0 +1,184 @@
+# ============================================================
+#   gClans v2.0.0 — Mensajes
+#   Placeholders comunes: {clan}, {player}, {target}, {value}, {time}
+# ============================================================
+
+prefix: '&8[&6&lClans&8] '
+
+# --- General ---
+general:
+  no-permission: '&cNo tienes permiso para ejecutar este comando.'
+  player-only: '&cEste comando solo puede ser usado por jugadores.'
+  player-not-found: '&cEl jugador &e{player} &cno está conectado.'
+  invalid-usage: '&cUso incorrecto. Escribe &e/clan &cpara ver los comandos.'
+  unknown-command: '&cComando desconocido.'
+  not-in-clan: '&cNo perteneces a ningún clan.'
+  target-not-in-clan: '&cEl jugador &e{target} &cno pertenece a ningún clan.'
+  clan-not-found: '&cEl clan &e{clan} &cno existe.'
+  already-in-clan: '&cYa perteneces a un clan. Debes salir primero.'
+  target-already-in-clan: '&cEl jugador &e{target} &cya pertenece a un clan.'
+
+# --- Cooldown ---
+cooldown:
+  create: '&cDebes esperar &e{time} &cpara poder crear un nuevo clan.'
+
+# --- Creación ---
+clan:
+  create:
+    success: '&aCreaste el clan &e{clan} &aexitosamente.'
+    name-too-short: '&cEl nombre debe tener al menos &e{min} &ccaracteres.'
+    name-too-long: '&cEl nombre no puede superar &e{max} &ccaracteres.'
+    name-invalid: '&cEl nombre contiene caracteres no permitidos.'
+    name-blacklisted: '&cEse nombre no está permitido.'
+    name-taken: '&cYa existe un clan con ese nombre.'
+
+  disband:
+    confirm: '&eEscribe &c/clan disband confirm &edentro de &c{time}s &epara confirmar.'
+    success: '&cEl clan &e{clan} &cha sido disuelto.'
+    not-leader: '&cSolo el líder puede disolver el clan.'
+    no-pending: '&cNo tienes ninguna solicitud pendiente de disolución.'
+
+  rename:
+    success: '&aEl clan ha sido renombrado a &e{clan}&a.'
+    no-permission: '&cSolo el líder puede renombrar el clan.'
+
+  prefix:
+    success: '&aEl prefijo del clan fue actualizado a &r{prefix}&a.'
+    invalid: '&cEl prefijo contiene caracteres no permitidos.'
+    too-short: '&cEl prefijo debe tener al menos &e{min} &ccaracteres.'
+    too-long: '&cEl prefijo no puede superar &e{max} &ccaracteres.'
+    no-permission: '&cSolo el líder puede cambiar el prefijo.'
+
+# --- Membresía ---
+member:
+  leave:
+    success-self: '&aAbandonaste el clan &e{clan}&a.'
+    success-broadcast: '&e{player} &aabandonó el clan.'
+    leader-cannot-leave: '&cEres el líder. Usa &e/clan disband &co &e/clan setleader&c primero.'
+
+  kick:
+    success-self: '&aExpulsaste a &e{target} &adel clan.'
+    success-target: '&cFuiste expulsado del clan &e{clan}&c.'
+    success-broadcast: '&e{target} &cfue expulsado por &e{player}&c.'
+    cannot-kick-self: '&cNo puedes expulsarte a ti mismo.'
+    cannot-kick-higher: '&cNo puedes expulsar a alguien de igual o mayor rango.'
+    no-permission: '&cNecesitas ser &eCo-Líder &co superior.'
+
+# --- Invitaciones ---
+invite:
+  sent: '&aInvitaste a &e{target} &aal clan.'
+  received: '&e{player} &ate invitó al clan &e{clan}&a. Haz &e[click aquí] &ao usa &e/clan accept {clan}&a.'
+  already-invited: '&cEl jugador &e{target} &cya tiene una invitación pendiente.'
+  expired: '&cLa invitación para &e{target} &ccaducó.'
+  no-permission: '&cNecesitas ser &eCo-Líder &co superior.'
+
+uninvite:
+  success: '&aCancelaste la invitación de &e{target}&a.'
+  not-invited: '&cEl jugador &e{target} &cno tiene invitación pendiente.'
+  no-permission: '&cNecesitas ser &eCo-Líder &co superior.'
+
+accept:
+  success-self: '&aAhora eres miembro del clan &e{clan}&a.'
+  success-broadcast: '&e{player} &ase unió al clan.'
+  not-invited: '&cNo tienes invitación para ese clan.'
+
+# --- Rangos ---
+rank:
+  promote:
+    success-self: '&aAscendiste a &e{target} &aal rango &e{rank}&a.'
+    success-target: '&aFuiste ascendido al rango &e{rank} &apor &e{player}&a.'
+    already-max: '&c{target} &cya tiene el rango máximo posible.'
+    no-permission: '&cSolo el líder puede modificar rangos.'
+    cannot-self: '&cNo puedes modificar tu propio rango.'
+
+  demote:
+    success-self: '&aDegradaste a &e{target} &aal rango &e{rank}&a.'
+    success-target: '&cFuiste degradado al rango &e{rank} &cpor &e{player}&c.'
+    already-min: '&c{target} &cya tiene el rango mínimo.'
+    no-permission: '&cSolo el líder puede modificar rangos.'
+    cannot-self: '&cNo puedes modificar tu propio rango.'
+
+  setleader:
+    confirm: '&eEscribe &c/clan setleader {target} confirm &edentro de &c{time}s &epara confirmar.'
+    success-broadcast: '&e{player} &atransferió el liderazgo a &e{target}&a.'
+    success-old: '&aAhora eres &eCo-Líder&a. El liderazgo fue transferido a &e{target}&a.'
+    success-new: '&a¡Ahora eres el &eLíder &adel clan &e{clan}&a!'
+    not-leader: '&cSolo el líder puede transferir el liderazgo.'
+    not-member: '&c{target} &cno está en tu clan.'
+    cannot-self: '&cYa eres el líder del clan.'
+    no-pending: '&cNo tienes solicitud de transferencia pendiente.'
+
+# --- Chat ---
+chat:
+  clan:
+    on: '&aChat de clan activado.'
+    off: '&7Chat de clan desactivado.'
+  ally:
+    on: '&bChat de aliados activado.'
+    off: '&7Chat de aliados desactivado.'
+
+# --- PvP Toggle ---
+pvp:
+  enabled: '&aEl PvP entre miembros del clan fue &aACTIVADO&a.'
+  disabled: '&cEl PvP entre miembros del clan fue &cDESACTIVADO&c.'
+  blocked-member: '&cNo puedes atacar a un miembro de tu clan.'
+  blocked-ally: '&cNo puedes atacar a un aliado.'
+  no-permission: '&cNecesitas ser &eCo-Líder &co superior.'
+
+# --- Alianzas ---
+ally:
+  request-sent: '&aEnviaste solicitud de alianza al clan &e{clan}&a.'
+  request-received: '&eEl clan &e{clan} &ete envió solicitud de alianza. Usa &e/clan ally {clan} &apara aceptar.'
+  formed: '&aAlianza formada entre &e{clan1} &ay &e{clan2}&a.'
+  already-allies: '&cYa sois aliados con &e{clan}&c.'
+  not-allies: '&cNo sois aliados con &e{clan}&c.'
+  max-reached: '&cAlcanzaste el máximo de alianzas (&e{max}&c).'
+  cannot-self: '&cNo puedes aliarte con tu propio clan.'
+  no-permission: '&cNecesitas ser &eCo-Líder &co superior.'
+  not-found: '&cNo se encontró ningún clan con ese nombre o líder.'
+
+breakally:
+  success-self: '&aRompiste la alianza con &e{clan}&a.'
+  success-other: '&cEl clan &e{clan} &crompió la alianza con vosotros.'
+  no-permission: '&cNecesitas ser &eCo-Líder &co superior.'
+
+# --- Nivel ---
+level:
+  up: '&6&l¡El clan subió al nivel &e{level}&6!'
+
+# --- /clan info ---
+info:
+  header: '&e{clan} &8[&a{online}&8/&f{total}&8] &8- &8[&f{date}&8]'
+  leader: '&6Leader&8: &f{player}'
+  coleader: '&cCo-Leader&8: &f{player}'
+  members: '&9Members&8: &f{list}'
+  points: '&7Points&8: &f{value}'
+  position: '&7Position&8: &f#{pos}'
+  pvp-status: '&7Clan PvP&8: {status}'
+
+# --- /clan stats ---
+stats:
+  header: "&e{clan}&f's Statistics&8:"
+  kills: '&7Kills&8:   &f{value}'
+  deaths: '&7Deaths&8:  &f{value}'
+  kd: '&7K/D&8:     &f{value}'
+  points: '&7Points&8:  &f{value}'
+  level: '&7Level&8:   &f{value}'
+  killstreak: '&7Best Killstreak&8: &f{value} &8(&e{player}&8)'
+
+# --- /clan top ---
+top:
+  header-points: '&8&m----&r &6Top &e{count} &6Clanes &7(Points) &8&m----'
+  header-kills: '&8&m----&r &6Top &e{count} &6Clanes &7(Kills) &8&m----'
+  header-level: '&8&m----&r &6Top &e{count} &6Clanes &7(Level) &8&m----'
+  entry-points: ' &e#{pos} &f{clan} &8- &7{value} pts &8| &7Lv.{level}'
+  entry-kills: ' &e#{pos} &f{clan} &8- &7{value} kills &8| &7Lv.{level}'
+  entry-level: ' &e#{pos} &f{clan} &8- &7Lv.{value} &8| &7{kills} kills'
+  footer: '&8&m-------------------------------'
+
+# --- /clan list ---
+list:
+  header: '&eClan List &8(Page &f{page}&8/&f{max}&8)'
+  entry: '&f{pos}. &e{clan}    &8[&a{online}&8/&f{total} &7online&8]'
+  footer: '&7To view other pages, use &e/clan list {next}&7.'
+  empty: '&cNo hay clanes registrados aún.'

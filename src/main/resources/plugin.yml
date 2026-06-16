@@ -1,0 +1,23 @@
+name: gClans
+version: 2.0.0
+main: me.gamma.clans.Clans
+api-version: 1.8
+description: Sistema de clanes
+author: gamma
+
+softdepend: [PlaceholderAPI]
+
+commands:
+  clan:
+    description: Comando principal del sistema de clanes
+    usage: /clan help
+    aliases: [clan]
+ 
+permissions:
+  gclans.use:
+    description: Permite usar los comandos básicos de clanes
+    default: true
+  gclans.admin:
+    description: Acceso total a comandos administrativos
+    default: op
+ 

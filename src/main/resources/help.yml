@@ -1,0 +1,51 @@
+# ============================================================
+#   gClans v2.0.0 — Ayuda paginada (/clan help [page])
+# ============================================================
+
+header: '&8&m--------&r &6gClans Help &8(Page &f{page}&8/&f{max}&8) &8&m--------'
+footer: '&8Use &7/clan help {next} &8for more commands.'
+footer-last: '&8&m-----------------------------------------'
+
+pages:
+  page-1:
+    - ' '
+    - '&6General Commands&8:'
+    - ' &e/clan create &f<name> [prefix] &8- &7Create a new clan.'
+    - ' &e/clan accept &f<clan> &8- &7Accept a clan invitation.'
+    - ' &e/clan leave &8- &7Leave your current clan.'
+    - ' &e/clan top &f[points/kills/level] &8- &7View the top clans ranking.'
+    - ' &e/clan stats &f<clan> &8- &7View detailed clan statistics.'
+    - ' '
+
+  page-2:
+    - ' '
+    - '&6Information Commands&8:'
+    - '  &e/clan info &f<clan/player> &8- &7View info of a clan or player.'
+    - '  &e/clan list &f[page] &8- &7List all server clans.'
+    - ' '
+    - '&6Chat Commands&8:'
+    - '  &e/clan chat &8- &7Toggle clan chat.'
+    - '  &e/clan chatally &8- &7Toggle ally chat.'
+    - ' '
+
+  page-3:
+    - ' '
+    - '&6Co-Leader Commands&8:'
+    - '  &e/clan invite &f<player> &8- &7Invite a player to your clan.'
+    - '  &e/clan uninvite &f<player> &8- &7Cancel a pending invitation.'
+    - '  &e/clan kick &f<player> &8- &7Kick a member from the clan.'
+    - '  &e/clan ally &f<clan> &8- &7Send/accept an alliance request.'
+    - '  &e/clan breakally &f<clan> &8- &7Break an alliance.'
+    - '  &e/clan pvp &f<on/off> &8- &7Toggle PvP between clan members.'
+    - ' '
+
+  page-4:
+    - ' '
+    - '&6Leader Commands&8:'
+    - '  &e/clan disband &f[confirm] &8- &7Disband your clan.'
+    - '  &e/clan rename &f<name> &8- &7Rename your clan.'
+    - '  &e/clan prefix &f<prefix> &8- &7Change clan prefix.'
+    - '  &e/clan promote &f<player> &8- &7Promote a member.'
+    - '  &e/clan demote &f<player> &8- &7Demote a member.'
+    - '  &e/clan setleader &f<player> [confirm] &8- &7Transfer leadership.'
+    - ' '
