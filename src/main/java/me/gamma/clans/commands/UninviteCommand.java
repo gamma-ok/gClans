@@ -32,7 +32,8 @@ public class UninviteCommand extends AbstractClanCommand {
 			return;
 		}
 
-		plugin.getInvitationManager().cancel(target.getUniqueId());
+		plugin.getInvitationManager().cancelAndNotify(target.getUniqueId(), player.getName());
+
 		msg(player, "uninvite.success", "{target}", target.getName());
 	}
 }

@@ -1,22 +1,17 @@
 package me.gamma.clans.commands;
 
 import me.gamma.clans.Clans;
+import me.gamma.clans.models.RankPermission;
 import me.gamma.clans.models.Clan;
 import me.gamma.clans.models.ClanPlayer;
 import org.bukkit.entity.Player;
 
 import java.util.*;
 
-/**
- * /clan list [page]
- *
- * Formato: Clan List (Page 1/5) 1. Elite [8/30 online] ... To view other pages,
- * use /clan list <page>.
- */
 public class ListCommand extends AbstractClanCommand {
 
 	public ListCommand(Clans plugin) {
-		super(plugin, "list", "gclans.use", null, false);
+		super(plugin, "list", "gclans.use", (RankPermission) null, false);
 	}
 
 	@Override
@@ -28,7 +23,6 @@ public class ListCommand extends AbstractClanCommand {
 			return;
 		}
 
-		// Ordenar por total de miembros desc
 		List<Clan> sorted = new ArrayList<>(all);
 		sorted.sort((a, b) -> b.getMemberCount() - a.getMemberCount());
 
@@ -47,21 +41,49 @@ public class ListCommand extends AbstractClanCommand {
 		int from = (page - 1) * pageSize;
 		int to = Math.min(from + pageSize, sorted.size());
 
-		// Header: "Clan List (Page 1/5)"
-		send(player, "§eClan List §8(Page §f" + page + "§8/§f" + totalPages + "§8)");
-
+		StringBuilder entries = new StringBuilder();
 		for (int i = from; i < to; i++) {
 			Clan clan = sorted.get(i);
 			int online = cm.getOnlineCount(clan);
 			int total = clan.getMemberCount();
 
-			raw(player, "list.entry", "{pos}", String.valueOf(i + 1), "{clan}", clan.getName(), "{online}",
-					String.valueOf(online), "{total}", String.valueOf(total));
+			String entry = cfg.getRaw("list.entry", "{pos}", String.valueOf(i + 1), "{clan}", clan.getName(),
+					"{online}", String.valueOf(online), "{total}", String.valueOf(total));
+
+			if (i > from)
+				entries.append("\n");
+			entries.append(entry);
 		}
 
-		// Footer
-		if (page < totalPages) {
-			raw(player, "list.footer", "{next}", String.valueOf(page + 1));
+		String nextPage = String.valueOf(Math.min(page + 1, totalPages));
+		boolean isLast = (page >= totalPages);
+
+		List<String> lines = cfg.getMessages().getStringList("list.lines");
+
+		if (lines.isEmpty()) {
+			send(player, "&eClan List &8(Page &f" + page + "&8/&f" + totalPages + "&8)");
+			for (String entryLine : entries.toString().split("\n")) {
+				send(player, entryLine);
+			}
+			if (!isLast)
+				send(player, "&7To view other pages, use &e/clan list " + nextPage + "&7.");
+			return;
+		}
+
+		for (String line : lines) {
+			if (isLast && line.contains("{next}"))
+				continue;
+
+			if (line.contains("{entries}")) {
+				if (entries.length() > 0) {
+					for (String entryLine : entries.toString().split("\n")) {
+						send(player, entryLine);
+					}
+				}
+			} else {
+				send(player, line.replace("{page}", String.valueOf(page)).replace("{max}", String.valueOf(totalPages))
+						.replace("{next}", nextPage));
+			}
 		}
 	}
 }

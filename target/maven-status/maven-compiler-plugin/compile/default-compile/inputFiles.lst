@@ -1,7 +1,9 @@
 C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\commands\InfoCommand.java
 C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\commands\PromoteCommand.java
+C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\commands\admin\AdminHelpCommand.java
 C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\commands\AllyCommand.java
 C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\commands\TopCommand.java
+C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\commands\admin\AdminCommandExecutor.java
 C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\models\Clan.java
 C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\models\ClanPlayer.java
 C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\commands\LeaveCommand.java
@@ -25,8 +27,10 @@ C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\commands\Kick
 C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\commands\BreakAllyCommand.java
 C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\commands\ClanCommandExecutor.java
 C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\commands\HelpCommand.java
+C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\managers\RankManager.java
 C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\commands\ListCommand.java
 C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\listeners\ClanChatListener.java
+C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\models\RankPermission.java
 C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\Clans.java
 C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\commands\DisbandCommand.java
 C:\Users\User\Documents\GitHub\gClans\src\main\java\me\gamma\clans\storage\StorageProvider.java

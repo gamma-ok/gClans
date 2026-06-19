@@ -1,20 +1,19 @@
 package me.gamma.clans.commands;
 
 import me.gamma.clans.Clans;
+import me.gamma.clans.config.ConfigManager;
 import me.gamma.clans.models.Clan;
 import me.gamma.clans.models.ClanPlayer;
 import me.gamma.clans.models.Rank;
+import me.gamma.clans.models.RankPermission;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 
-/**
- * /clan ally <clan|leader> Solicita o acepta alianza. Busca por nombre de clan
- * O nombre del líder. Flujo bidireccional: ClanA envía → ClanB acepta con el
- * mismo comando.
- */
 public class AllyCommand extends AbstractClanCommand {
 
 	public AllyCommand(Clans plugin) {
-		super(plugin, "ally", "gclans.use", Rank.CO_LEADER, true);
+		super(plugin, "ally", "gclans.use", RankPermission.ALLY, true);
 	}
 
 	@Override
@@ -26,7 +25,6 @@ public class AllyCommand extends AbstractClanCommand {
 		if (myClan == null)
 			return;
 
-		// Búsqueda dual: por nombre de clan o por nombre de líder
 		Clan target = cm.findClanByNameOrLeader(args[0]);
 		if (target == null) {
 			msg(player, "ally.not-found");
@@ -47,7 +45,6 @@ public class AllyCommand extends AbstractClanCommand {
 			return;
 		}
 
-		// Si el otro clan ya envió solicitud → aceptar y formalizar
 		if (target.hasPendingRequestTo(myClan.getId())) {
 			cm.formAlliance(myClan.getId(), target.getId())
 					.thenRun(() -> plugin.getServer().getScheduler().runTask(plugin, () -> {
@@ -57,19 +54,46 @@ public class AllyCommand extends AbstractClanCommand {
 						plugin.getLogger().severe(ex.getMessage());
 						return null;
 					});
+
 		} else {
-			// Enviar solicitud
 			myClan.addPendingRequest(target.getId());
 			msg(player, "ally.request-sent", "{clan}", target.getName());
 
-			// Notificar a co-líderes y líderes del clan objetivo
+			final String senderClanName = myClan.getName();
 			target.getMembers().forEach((uuid, rank) -> {
 				if (rank.isAtLeast(Rank.CO_LEADER)) {
 					Player m = plugin.getServer().getPlayer(uuid);
-					if (m != null)
-						m.sendMessage(cfg.getMessage("ally.request-received", "{clan}", myClan.getName()));
+					if (m != null) {
+						sendClickableAllyRequest(m, senderClanName);
+					}
 				}
 			});
 		}
+	}
+
+	private void sendClickableAllyRequest(Player recipient, String senderClanName) {
+		String rawMsg = cfg.getMessage("ally.request-received", "{clan}", senderClanName);
+
+		String marker = ConfigManager.color("&e[click aquí]");
+		int markerIdx = rawMsg.indexOf(marker);
+
+		TextComponent full;
+
+		if (markerIdx >= 0) {
+			TextComponent before = new TextComponent(rawMsg.substring(0, markerIdx));
+			TextComponent clickable = new TextComponent(marker);
+			clickable.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/clan ally " + senderClanName));
+			TextComponent after = new TextComponent(rawMsg.substring(markerIdx + marker.length()));
+
+			full = new TextComponent(before);
+			full.addExtra(clickable);
+			full.addExtra(after);
+		} else {
+			full = new TextComponent(rawMsg);
+			full.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/clan ally " + senderClanName));
+
+		}
+
+		recipient.spigot().sendMessage(full);
 	}
 }

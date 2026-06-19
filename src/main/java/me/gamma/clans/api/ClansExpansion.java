@@ -12,44 +12,39 @@ import java.util.List;
 /**
  * Expansión de PlaceholderAPI para gClans v2.
  *
- * ============================================================ PLACEHOLDERS DE
- * JUGADOR: ============================================================
- * %gclan_has_clan% → true / false %gclan_name% → §eElite (con color del clan;
- * "Sin clan" si no tiene) %gclan_name_raw% → Elite (sin color) %gclan_prefix% →
- * §e[ELT] (con color; vacío si no tiene) %gclan_tag% → §e[ELT]§fElite (prefijo
- * + nombre; vacío si no tiene) %gclan_rank% → Co-Leader %gclan_rank_colored% →
- * §cCo-Leader %gclan_kills% → 42 %gclan_deaths% → 10 %gclan_kd% → 4.20
- * %gclan_points% → 37.5 %gclan_killstreak% → 5 (racha activa)
- * %gclan_best_killstreak% → 12 (mejor racha) %gclan_clan_kills% → 450
- * %gclan_clan_deaths% → 120 %gclan_clan_points% → 1230 %gclan_clan_level% → 15
- * %gclan_clan_members% → 18 %gclan_clan_slots% → 30
+ * PLACEHOLDERS DE JUGADOR: %gclan_has_clan% → true / false %gclan_name% →
+ * §eElite (con color del clan; "Sin clan" si no tiene) %gclan_name_raw% → Elite
+ * (sin color) %gclan_prefix% → §e[ELT] (con color; vacío si no tiene)
+ * %gclan_tag% → §e[ELT]§fElite (prefijo + nombre; vacío si no tiene)
+ * %gclan_rank% → Co-Leader %gclan_rank_colored% → §cCo-Leader %gclan_kills% →
+ * 42 %gclan_deaths% → 10 %gclan_kd% → 4.20 %gclan_points% → 37.5
+ * %gclan_killstreak% → 5 (racha activa) %gclan_best_killstreak% → 12 (mejor
+ * racha) %gclan_clan_kills% → 450 %gclan_clan_deaths% → 120 %gclan_clan_points%
+ * → 1230 %gclan_clan_level% → 15 %gclan_clan_members% → 18 %gclan_clan_slots% →
+ * 30 %gclan_display% → prefix si tiene uno | nombre del clan si no | "Sin clan"
+ * si no tiene clan
  *
- * ============================================================ PLACEHOLDERS DE
- * TOP (hologramas — del _1 al _10):
- * ============================================================
- * %gclan_top_name_1% → nombre del clan #1 (por puntos)
- * %gclan_top_name_colored_1% → §enombre del clan #1 %gclan_top_kills_1% → kills
- * del clan #1 %gclan_top_points_1% → puntos del clan #1 %gclan_top_level_1% →
- * nivel del clan #1 %gclan_top_members_1% → miembros del clan #1
- * %gclan_top_prefix_1% → prefijo del clan #1 %gclan_top_leader_1% → nombre del
- * líder del clan #1
+ * PLACEHOLDERS DE TOP (hologramas del 1 al 10): %gclan_top_name_1% → nombre del
+ * clan #1 (por puntos) %gclan_top_name_colored_1% → §enombre del clan #1
+ * %gclan_top_kills_1% → kills del clan #1 %gclan_top_points_1% → puntos del
+ * clan #1 %gclan_top_level_1% → nivel del clan #1 %gclan_top_members_1% →
+ * miembros del clan #1 %gclan_top_prefix_1% → prefijo del clan #1
+ * %gclan_top_leader_1% → nombre del líder del clan #1
  *
- * ============================================================ EJEMPLO CHAT:
- * &8[&a%pvplevels_level%&8] %gclan_prefix%&7%player_name%&7: &f{message}
+ * EJEMPLO CHAT: &8[&a%pvplevels_level%&8] %gclan_prefix%&7%player_name%&7:
+ * &f{message}
  *
  * EJEMPLO HOLOGRAMA: &6&lTOP CLANES &e#1 %gclan_top_name_colored_1% &7-
  * &a%gclan_top_points_1% pts &e#2 %gclan_top_name_colored_2% &7-
  * &a%gclan_top_points_2% pts
- * ============================================================
  */
 public class ClansExpansion extends PlaceholderExpansion {
 
 	private static final int MAX_TOP = 10;
-	private static final long CACHE_TTL_MS = 60_000L; // 60 segundos
+	private static final long CACHE_TTL_MS = 60_000L;
 
 	private final Clans plugin;
 
-	// Caché del top (por puntos, que es el default de hologramas)
 	private List<Clan> topCache = new ArrayList<>();
 	private long topCacheTime = 0L;
 
@@ -82,13 +77,8 @@ public class ClansExpansion extends PlaceholderExpansion {
 		return true;
 	}
 
-	// -------------------------------------------------------
-	// Resolución principal
-	// -------------------------------------------------------
-
 	@Override
 	public String onRequest(OfflinePlayer player, String identifier) {
-		// Top placeholders (no requieren jugador)
 		if (identifier.startsWith("top_")) {
 			return resolveTop(identifier);
 		}
@@ -102,10 +92,6 @@ public class ClansExpansion extends PlaceholderExpansion {
 
 		return resolvePlayer(cp, identifier);
 	}
-
-	// -------------------------------------------------------
-	// Placeholders de jugador
-	// -------------------------------------------------------
 
 	private String resolvePlayer(ClanPlayer cp, String id) {
 		switch (id) {
@@ -138,15 +124,36 @@ public class ClansExpansion extends PlaceholderExpansion {
 			return resolveDefault(id);
 
 		switch (id) {
-		// Nombre con color del clan (NO hereda el color anterior en el chat)
-		case "name":
-			return clan.getColoredName(); // ej: §eElite
+		case "name": {
+			String nameColor = plugin.getConfigManager().getNamePlaceholderColor();
+			return "§" + nameColor + clan.getName();
+		}
 		case "name_raw":
-			return clan.getName(); // sin color
-		case "prefix":
-			return clan.getColoredPrefix(); // ej: §e[ELT]
+			return clan.getName();
+		case "prefix": {
+			if (!clan.hasCustomPrefix()) {
+				String pc = plugin.getConfigManager().getPrefixPlaceholderColor();
+				return "§" + pc + plugin.getConfigManager().getNoPrefixText();
+			}
+			return clan.getColoredPrefix();
+		}
+
+		case "display": {
+			if (!cp.hasClan()) {
+				String nc = plugin.getConfigManager().getNamePlaceholderColor();
+				return "§" + nc + plugin.getConfigManager().getNoClanText();
+			}
+
+			if (clan.hasCustomPrefix()) {
+				return clan.getColoredPrefix();
+			} else {
+				String nameColor = plugin.getConfigManager().getNamePlaceholderColor();
+				return "§" + nameColor + clan.getName();
+			}
+		}
 		case "tag":
 			return clan.getColoredPrefix() + "§f" + clan.getName();
+
 		case "clan_kills":
 			return String.valueOf(clan.getTotalKills());
 		case "clan_deaths":
@@ -182,30 +189,36 @@ public class ClansExpansion extends PlaceholderExpansion {
 		case "points":
 		case "clan_points":
 			return "0.0";
-		case "name":
+		case "name": {
+			String nc = plugin.getConfigManager().getNamePlaceholderColor();
+			return "§" + nc + noClan;
+		}
 		case "rank":
 			return noClan;
 		case "rank_colored":
-		case "prefix":
 		case "tag":
 		case "name_raw":
 			return "";
+		case "display": {
+			String nc = plugin.getConfigManager().getNamePlaceholderColor();
+			return "§" + nc + plugin.getConfigManager().getNoClanText();
+		}
+		case "prefix": {
+			String pc = plugin.getConfigManager().getPrefixPlaceholderColor();
+			return "§" + pc + plugin.getConfigManager().getNoPrefixText();
+		}
+
 		default:
 			return null;
 		}
 	}
 
-	// -------------------------------------------------------
-	// Placeholders de Top
-	// -------------------------------------------------------
-
 	private String resolveTop(String identifier) {
-		// Formato: top_<campo>_<posición> ej: top_name_1, top_kills_3
-		String[] parts = identifier.split("_", 3); // ["top", "name", "1"]
+		String[] parts = identifier.split("_", 3);
 		if (parts.length != 3)
 			return null;
 
-		String field = parts[1]; // campo
+		String field = parts[1];
 		int pos;
 		try {
 			pos = Integer.parseInt(parts[2]);
@@ -249,35 +262,26 @@ public class ClansExpansion extends PlaceholderExpansion {
 		}
 	}
 
-	// -------------------------------------------------------
-	// Caché del top (asíncrono, no bloquea el hilo principal)
-	// -------------------------------------------------------
-
 	private synchronized List<Clan> getCachedTop() {
 		long now = System.currentTimeMillis();
 		if (now - topCacheTime > CACHE_TTL_MS) {
-			topCacheTime = now; // marcar antes para evitar multiple requests
+			topCacheTime = now;
 			plugin.getClanManager().getTopByPoints(MAX_TOP).thenAccept(list -> {
 				synchronized (ClansExpansion.this) {
 					topCache = list;
 				}
 			}).exceptionally(ex -> {
 				plugin.getLogger().warning("Error refrescando caché top PAPI: " + ex.getMessage());
-				topCacheTime = 0L; // reintentar en el próximo ciclo
+				topCacheTime = 0L;
 				return null;
 			});
 		}
 		return topCache;
 	}
 
-	/** Fuerza invalidar el caché (llamar después de un disbandClan). */
 	public synchronized void invalidateTopCache() {
 		topCacheTime = 0L;
 	}
-
-	// -------------------------------------------------------
-	// Utilidades
-	// -------------------------------------------------------
 
 	private String formatPts(double pts) {
 		if (pts == Math.floor(pts) && !Double.isInfinite(pts))

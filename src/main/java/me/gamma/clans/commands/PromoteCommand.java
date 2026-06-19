@@ -37,7 +37,6 @@ public class PromoteCommand extends AbstractClanCommand {
 		Rank current = clan.getMemberRank(target.getUniqueId());
 		Rank next = current != null ? current.next() : null;
 
-		// LEADER no se puede asignar con promote; usa setleader
 		if (next == null || next == Rank.LEADER) {
 			msg(player, "rank.promote.already-max", "{target}", target.getName());
 			return;

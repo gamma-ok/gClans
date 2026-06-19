@@ -1,6 +1,7 @@
 package me.gamma.clans.commands;
 
 import me.gamma.clans.Clans;
+import me.gamma.clans.models.RankPermission;
 import me.gamma.clans.models.Clan;
 import me.gamma.clans.models.ClanPlayer;
 import org.bukkit.entity.Player;
@@ -8,13 +9,10 @@ import org.bukkit.entity.Player;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * /clan top [points|kills|level] Default: points.
- */
 public class TopCommand extends AbstractClanCommand {
 
 	public TopCommand(Clans plugin) {
-		super(plugin, "top", "gclans.use", null, false);
+		super(plugin, "top", "gclans.use", (RankPermission) null, false);
 	}
 
 	@Override
@@ -23,36 +21,36 @@ public class TopCommand extends AbstractClanCommand {
 
 		int limit = cfg.getTopCount();
 		CompletableFuture<List<Clan>> future;
-		String headerKey, entryKey;
+		String linesKey, entryKey;
 
 		switch (type) {
 		case "kills":
 			future = cm.getTopByKills(limit);
-			headerKey = "top.header-kills";
+			linesKey = "top.lines-kills";
 			entryKey = "top.entry-kills";
 			break;
 		case "level":
 			future = cm.getTopByLevel(limit);
-			headerKey = "top.header-level";
+			linesKey = "top.lines-level";
 			entryKey = "top.entry-level";
 			break;
 		default: // points
 			future = cm.getTopByPoints(limit);
-			headerKey = "top.header-points";
+			linesKey = "top.lines-points";
 			entryKey = "top.entry-points";
 			break;
 		}
 
-		final String hKey = headerKey;
-		final String eKey = entryKey;
+		final String lk = linesKey;
+		final String ek = entryKey;
+		final String tp = type;
 
 		future.thenAccept(clans -> plugin.getServer().getScheduler().runTask(plugin, () -> {
-			raw(player, hKey, "{count}", String.valueOf(clans.size()));
-
+			StringBuilder entries = new StringBuilder();
 			for (int i = 0; i < clans.size(); i++) {
 				Clan clan = clans.get(i);
 				String value;
-				switch (type) {
+				switch (tp) {
 				case "kills":
 					value = String.valueOf(clan.getTotalKills());
 					break;
@@ -63,10 +61,37 @@ public class TopCommand extends AbstractClanCommand {
 					value = formatPoints(clan.getTotalPoints());
 					break;
 				}
-				raw(player, eKey, "{pos}", String.valueOf(i + 1), "{clan}", clan.getName(), "{value}", value, "{level}",
-						String.valueOf(clan.getLevel()), "{kills}", String.valueOf(clan.getTotalKills()));
+				String entry = cfg.getRaw(ek, "{pos}", String.valueOf(i + 1), "{clan}", clan.getName(), "{value}",
+						value, "{level}", String.valueOf(clan.getLevel()), "{kills}",
+						String.valueOf(clan.getTotalKills()));
+
+				if (i > 0)
+					entries.append("\n");
+				entries.append(entry);
 			}
-			raw(player, "top.footer");
+
+			List<String> lines = cfg.getMessages().getStringList(lk);
+
+			if (lines.isEmpty()) {
+				send(player, "&8&m----&r &6Top Clanes &8&m----");
+				for (String entryLine : entries.toString().split("\n")) {
+					send(player, entryLine);
+				}
+				send(player, "&8&m-------------------------------");
+				return;
+			}
+
+			for (String line : lines) {
+				if (line.contains("{entries}")) {
+					if (entries.length() > 0) {
+						for (String entryLine : entries.toString().split("\n")) {
+							send(player, entryLine);
+						}
+					}
+				} else {
+					send(player, line.replace("{count}", String.valueOf(clans.size())));
+				}
+			}
 		})).exceptionally(ex -> {
 			plugin.getLogger().severe(ex.getMessage());
 			return null;

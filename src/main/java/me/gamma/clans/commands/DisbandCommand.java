@@ -29,7 +29,6 @@ public class DisbandCommand extends AbstractClanCommand {
 			return;
 		}
 
-		// Primera vez: registrar confirmación
 		Clan clan = cm.getClan(cp.getClanId());
 		if (clan == null)
 			return;
@@ -37,7 +36,6 @@ public class DisbandCommand extends AbstractClanCommand {
 		final String clanId = clan.getId();
 
 		plugin.getConfirmationManager().request(player.getUniqueId(), Type.DISBAND, null, uuid -> {
-			// Notificar a miembros ANTES de borrar
 			clan.getMembers().keySet().forEach(mid -> {
 				Player m = plugin.getServer().getPlayer(mid);
 				if (m != null && !m.getUniqueId().equals(uuid))

@@ -3,67 +3,39 @@ package me.gamma.clans.models;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-/**
- * Modelo central de un Clan. Incluye sistema de niveles, XP, puntos flotantes,
- * toggle PvP y fecha de creación.
- */
 public class Clan {
 
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
 
-	// -------------------------------------------------------
-	// Identidad (inmutable)
-	// -------------------------------------------------------
 	private final String id;
-	private final long createdAt; // timestamp de creación
+	private final long createdAt;
 
-	// -------------------------------------------------------
-	// Datos mutables
-	// -------------------------------------------------------
 	private String name;
-	private String prefix; // prefijo coloreado (con §)
-	private String color; // código de color sin '&' (ej: "e")
+	private String prefix;
+	private String color;
 	private UUID leaderUuid;
 
-	// -------------------------------------------------------
-	// Miembros y aliados
-	// -------------------------------------------------------
 	private final Map<UUID, Rank> members = new LinkedHashMap<>();
 	private final Set<String> allies = new HashSet<>();
 	private final Set<String> pendingAllyRequests = new HashSet<>();
 
-	// -------------------------------------------------------
-	// Estadísticas del clan (agregado de miembros)
-	// -------------------------------------------------------
 	private int totalKills;
 	private int totalDeaths;
-	private double totalPoints; // puede ser negativo
+	private double totalPoints;
 
-	// -------------------------------------------------------
-	// Sistema de nivel
-	// -------------------------------------------------------
 	private int level;
 	private int xp;
-	private int slots; // máximo de miembros permitidos
+	private int slots;
 
-	// -------------------------------------------------------
-	// Mejor killstreak (jugador + valor)
-	// -------------------------------------------------------
 	private int bestKillstreak;
-	private String bestKillstreakPlayer; // nombre del jugador
+	private String bestKillstreakPlayer;
 
-	// -------------------------------------------------------
-	// Toggle PvP entre miembros
-	// -------------------------------------------------------
-	private boolean pvpEnabled; // false por defecto: miembros NO se dañan
+	private boolean pvpEnabled;
 
-	// -------------------------------------------------------
-	// Constructor (nuevo clan)
-	// -------------------------------------------------------
 	public Clan(String id, String name, String prefix, String color, UUID founderUuid, int defaultSlots) {
 		this.id = id;
 		this.name = name;
-		this.prefix = prefix;
+		this.prefix = "";
 		this.color = color;
 		this.leaderUuid = founderUuid;
 		this.createdAt = System.currentTimeMillis();
@@ -79,10 +51,6 @@ public class Clan {
 		this.members.put(founderUuid, Rank.LEADER);
 	}
 
-	/**
-	 * Constructor de reconstrucción desde BD. Los miembros y aliados se añaden por
-	 * separado.
-	 */
 	public Clan(String id, String name, String prefix, String color, UUID leaderUuid, long createdAt, int level, int xp,
 			int slots, int totalKills, int totalDeaths, double totalPoints, int bestKillstreak,
 			String bestKillstreakPlayer, boolean pvpEnabled) {
@@ -102,10 +70,6 @@ public class Clan {
 		this.bestKillstreakPlayer = bestKillstreakPlayer != null ? bestKillstreakPlayer : "";
 		this.pvpEnabled = pvpEnabled;
 	}
-
-	// -------------------------------------------------------
-	// Gestión de miembros
-	// -------------------------------------------------------
 
 	public void addMember(UUID uuid, Rank rank) {
 		members.put(uuid, rank);
@@ -133,10 +97,6 @@ public class Clan {
 		members.put(uuid, rank);
 	}
 
-	/**
-	 * Transfiere el liderazgo de forma atómica. El líder actual baja a CO_LEADER;
-	 * el nuevo sube a LEADER.
-	 */
 	public void transferLeadership(UUID newLeader) {
 		if (!members.containsKey(newLeader))
 			throw new IllegalArgumentException("Not a member");
@@ -148,10 +108,6 @@ public class Clan {
 	public boolean isFull() {
 		return members.size() >= slots;
 	}
-
-	// -------------------------------------------------------
-	// Alianzas
-	// -------------------------------------------------------
 
 	public void addAlly(String clanId) {
 		allies.add(clanId);
@@ -174,11 +130,6 @@ public class Clan {
 		return pendingAllyRequests.contains(id);
 	}
 
-	// -------------------------------------------------------
-	// Estadísticas
-	// -------------------------------------------------------
-
-	/** Registra una kill: actualiza totales, XP, puntos y mejor killstreak. */
 	public void onMemberKill(String killerName, int killerStreak, double killPoints, int xpPerKill) {
 		totalKills++;
 		totalPoints += killPoints;
@@ -189,82 +140,58 @@ public class Clan {
 		}
 	}
 
-	/** Registra una muerte: descuenta puntos (el XP/nivel NO bajan). */
 	public void onMemberDeath(double deathPoints) {
 		totalDeaths++;
 		totalPoints -= deathPoints;
 	}
 
-	// -------------------------------------------------------
-	// Nivel
-	// -------------------------------------------------------
-
-	/**
-	 * Calcula la XP necesaria para subir al siguiente nivel usando la fórmula de
-	 * config. Reemplaza %level% con el nivel actual. La fórmula se evalúa aquí de
-	 * forma simple (multiplicación y suma).
-	 */
 	public int xpForNextLevel(String formula) {
 		String resolved = formula.replace("%level%", String.valueOf(level));
 		try {
 			return (int) evalSimpleFormula(resolved);
 		} catch (Exception e) {
-			return level * 10; // fallback seguro
+			return level * 10;
 		}
 	}
 
-	/**
-	 * Comprueba si el clan puede subir de nivel y lo hace si corresponde.
-	 *
-	 * @param formula       Fórmula de XP de config.
-	 * @param maxLevel      Nivel máximo de config.
-	 * @param slotsPerLevel Slots que se añaden por nivel.
-	 * @return true si subió de nivel.
-	 */
-	public boolean tryLevelUp(String formula, int maxLevel, int slotsPerLevel) {
+	public boolean tryLevelUp(String formula, int maxLevel, int slotsForLevel, int maxSlots) {
 		if (level >= maxLevel)
 			return false;
 		int needed = xpForNextLevel(formula);
 		if (xp >= needed) {
 			xp -= needed;
 			level++;
-			slots += slotsPerLevel;
+			if (slotsForLevel > 0) {
+				int newSlots = slots + slotsForLevel;
+				slots = (maxSlots > 0) ? Math.min(newSlots, maxSlots) : newSlots;
+			}
 			return true;
 		}
 		return false;
 	}
 
-	// -------------------------------------------------------
-	// Formateo
-	// -------------------------------------------------------
-
 	public String getCreatedAtFormatted() {
 		return DATE_FORMAT.format(new Date(createdAt));
 	}
 
-	/**
-	 * Retorna el prefijo con el color del clan antepuesto. Ej: si color="e" y
-	 * prefix="[ELT]" → "§e[ELT]"
-	 */
 	public String getColoredPrefix() {
+		if (prefix.contains("§"))
+			return prefix;
 		return "§" + color + prefix;
 	}
 
-	/**
-	 * Retorna el nombre del clan con su color. Ej: "§eElite"
-	 */
+	public boolean hasCustomPrefix() {
+		if (prefix == null || prefix.isEmpty())
+			return false;
+
+		String stripped = prefix.replaceAll("§[0-9a-fA-FrRkKlLmMnNoO]", "").trim();
+		return !stripped.isEmpty();
+	}
+
 	public String getColoredName() {
 		return "§" + color + name;
 	}
 
-	// -------------------------------------------------------
-	// Utilidades internas
-	// -------------------------------------------------------
-
-	/**
-	 * Evaluador minimalista de fórmulas de la forma "N * M", "N + M", "N - M".
-	 * Suficiente para las fórmulas de nivel configurables.
-	 */
 	private double evalSimpleFormula(String formula) {
 		formula = formula.trim();
 		if (formula.contains("*")) {
@@ -281,10 +208,6 @@ public class Clan {
 		}
 		return Double.parseDouble(formula);
 	}
-
-	// -------------------------------------------------------
-	// Getters / Setters
-	// -------------------------------------------------------
 
 	public String getId() {
 		return id;
@@ -336,6 +259,10 @@ public class Clan {
 
 	public int getTotalKills() {
 		return totalKills;
+	}
+
+	public void setTotalKillsAdmin(int v) {
+		this.totalKills = v;
 	}
 
 	public int getTotalDeaths() {

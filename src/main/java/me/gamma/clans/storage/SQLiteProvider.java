@@ -12,17 +12,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Implementación SQLite de StorageProvider. Un hilo dedicado para todas las
- * operaciones de BD.
- */
 public class SQLiteProvider implements StorageProvider {
 
 	private final Clans plugin;
 	private Connection connection;
 	private final ExecutorService executor = Executors.newSingleThreadExecutor(r -> new Thread(r, "gClans-DB"));
 
-	private final String TC, TM, TA; // tabla clans, members, allies
+	private final String TC, TM, TA;
 
 	public SQLiteProvider(Clans plugin) {
 		this.plugin = plugin;
@@ -30,10 +26,6 @@ public class SQLiteProvider implements StorageProvider {
 		this.TM = plugin.getConfigManager().getTableMembers();
 		this.TA = plugin.getConfigManager().getTableAllies();
 	}
-
-	// -------------------------------------------------------
-	// Ciclo de vida
-	// -------------------------------------------------------
 
 	@Override
 	public void initialize() throws Exception {
@@ -60,7 +52,6 @@ public class SQLiteProvider implements StorageProvider {
 
 	private void createTables() throws SQLException {
 		try (Statement s = connection.createStatement()) {
-			// --- Clanes ---
 			s.executeUpdate("CREATE TABLE IF NOT EXISTS " + TC + " (" + "  id                    TEXT PRIMARY KEY,"
 					+ "  name                  TEXT NOT NULL UNIQUE," + "  prefix                TEXT NOT NULL,"
 					+ "  color                 TEXT NOT NULL DEFAULT 'e'," + "  leader_uuid           TEXT NOT NULL,"
@@ -69,22 +60,16 @@ public class SQLiteProvider implements StorageProvider {
 					+ "  total_kills           INTEGER DEFAULT 0," + "  total_deaths          INTEGER DEFAULT 0,"
 					+ "  total_points          REAL    DEFAULT 0.0," + "  best_killstreak       INTEGER DEFAULT 0,"
 					+ "  best_killstreak_player TEXT DEFAULT ''," + "  pvp_enabled           INTEGER DEFAULT 0" + ");");
-			// --- Miembros ---
 			s.executeUpdate("CREATE TABLE IF NOT EXISTS " + TM + " (" + "  uuid                  TEXT PRIMARY KEY,"
 					+ "  name                  TEXT NOT NULL," + "  clan_id               TEXT,"
 					+ "  rank                  TEXT," + "  kills                 INTEGER DEFAULT 0,"
 					+ "  deaths                INTEGER DEFAULT 0," + "  points                REAL    DEFAULT 0.0,"
 					+ "  best_killstreak       INTEGER DEFAULT 0," + "  create_cooldown_until INTEGER DEFAULT 0"
 					+ ");");
-			// --- Aliados ---
 			s.executeUpdate("CREATE TABLE IF NOT EXISTS " + TA + " (" + "  clan_id_1 TEXT NOT NULL,"
 					+ "  clan_id_2 TEXT NOT NULL," + "  PRIMARY KEY (clan_id_1, clan_id_2)" + ");");
 		}
 	}
-
-	// -------------------------------------------------------
-	// Clan
-	// -------------------------------------------------------
 
 	@Override
 	public CompletableFuture<Void> saveClan(Clan c) {
@@ -111,7 +96,6 @@ public class SQLiteProvider implements StorageProvider {
 				ps.setInt(15, c.isPvpEnabled() ? 1 : 0);
 				ps.executeUpdate();
 			}
-			// Persistir miembros del clan
 			for (Map.Entry<UUID, Rank> e : c.getMembers().entrySet()) {
 				String ms = "UPDATE " + TM + " SET clan_id=?, rank=? WHERE uuid=?";
 				try (PreparedStatement ps = connection.prepareStatement(ms)) {
@@ -153,20 +137,17 @@ public class SQLiteProvider implements StorageProvider {
 	@Override
 	public CompletableFuture<Void> deleteClan(String id) {
 		return run(() -> {
-			// Desvincular miembros primero
 			try (PreparedStatement ps = connection
 					.prepareStatement("UPDATE " + TM + " SET clan_id=NULL, rank=NULL WHERE clan_id=?")) {
 				ps.setString(1, id);
 				ps.executeUpdate();
 			}
-			// Borrar alianzas
 			try (PreparedStatement ps = connection
 					.prepareStatement("DELETE FROM " + TA + " WHERE clan_id_1=? OR clan_id_2=?")) {
 				ps.setString(1, id);
 				ps.setString(2, id);
 				ps.executeUpdate();
 			}
-			// Borrar clan
 			try (PreparedStatement ps = connection.prepareStatement("DELETE FROM " + TC + " WHERE id=?")) {
 				ps.setString(1, id);
 				ps.executeUpdate();
@@ -208,10 +189,6 @@ public class SQLiteProvider implements StorageProvider {
 			return list;
 		});
 	}
-
-	// -------------------------------------------------------
-	// Miembros
-	// -------------------------------------------------------
 
 	@Override
 	public CompletableFuture<Void> saveClanPlayer(ClanPlayer cp) {
@@ -269,10 +246,6 @@ public class SQLiteProvider implements StorageProvider {
 		});
 	}
 
-	// -------------------------------------------------------
-	// Alianzas
-	// -------------------------------------------------------
-
 	@Override
 	public CompletableFuture<Void> addAlliance(String a, String b) {
 		return run(() -> {
@@ -317,10 +290,6 @@ public class SQLiteProvider implements StorageProvider {
 		});
 	}
 
-	// -------------------------------------------------------
-	// Top
-	// -------------------------------------------------------
-
 	@Override
 	public CompletableFuture<List<Clan>> getTopByPoints(int limit) {
 		return queryTop("ORDER BY total_points DESC", limit);
@@ -349,10 +318,6 @@ public class SQLiteProvider implements StorageProvider {
 		});
 	}
 
-	// -------------------------------------------------------
-	// Mappers
-	// -------------------------------------------------------
-
 	private Clan mapClan(ResultSet rs) throws SQLException {
 		return new Clan(rs.getString("id"), rs.getString("name"), rs.getString("prefix"), rs.getString("color"),
 				UUID.fromString(rs.getString("leader_uuid")), rs.getLong("created_at"), rs.getInt("level"),
@@ -368,10 +333,6 @@ public class SQLiteProvider implements StorageProvider {
 				rankStr != null ? Rank.fromString(rankStr) : null, rs.getInt("kills"), rs.getInt("deaths"),
 				rs.getDouble("points"), rs.getInt("best_killstreak"), rs.getLong("create_cooldown_until"));
 	}
-
-	// -------------------------------------------------------
-	// Helpers async
-	// -------------------------------------------------------
 
 	private CompletableFuture<Void> run(SqlRunnable r) {
 		return CompletableFuture.runAsync(() -> {

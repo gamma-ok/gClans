@@ -23,7 +23,6 @@ public class PrefixCommand extends AbstractClanCommand {
 					String.valueOf(cfg.getPrefixMax()));
 			return;
 		}
-		// Traducir colores del prefijo
 		String colored = ConfigManager.color(newPrefix);
 		cm.setClanPrefix(cp.getClanId(), colored).thenRun(() -> plugin.getServer().getScheduler().runTask(plugin,
 				() -> msg(player, "clan.prefix.success", "{prefix}", colored))).exceptionally(ex -> {

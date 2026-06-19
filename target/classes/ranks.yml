@@ -1,0 +1,66 @@
+# ============================================================
+# gClans v2.0.0 — Rangos
+#
+# Jerarquía: member(0) < captain(1) < coleader(2) < leader(3)
+#
+# display-name: Nombre que aparece en chat, /clan info, etc.
+# prefix: Prefijo que aparece antes del nombre del jugador (vacío = ninguno).
+# ladderPosition: Posición en la jerarquía (no modificar).
+# permissions: Lista de acciones que puede realizar este rango.
+#
+# Permisos disponibles:
+#   CHAT -> /clan chat, /clan chat ally
+#   INVITE -> /clan invite, /clan uninvite
+#   KICK -> /clan kick
+#   ALLY -> /clan ally
+#   BREAKALLY -> /clan breakally
+#   PVP -> /clan pvp on/off
+#   PROMOTE -> /clan promote, /clan demote
+#   RENAME -> /clan rename
+#   PREFIX -> /clan prefix
+#   DISBAND -> /clan disband
+#   SETLEADER -> /clan setleader
+#   ALL -> todos los permisos anteriores
+# ============================================================
+
+ranks:
+
+  leader:
+    id: 3
+    display-name: '&6&lLíder'
+    prefix: ''
+    ladderPosition: 3
+    permissions:
+      - ALL
+
+  coleader:
+    id: 2
+    display-name: '&cCo-Líder'
+    prefix: ''
+    ladderPosition: 2
+    permissions:
+      - CHAT
+      - INVITE
+      - KICK
+      - ALLY
+      - BREAKALLY
+      - PVP
+
+  captain:
+    id: 1
+    display-name: '&bCapitán'
+    prefix: ''
+    ladderPosition: 1
+    permissions:
+      - CHAT
+      - INVITE
+      - KICK
+
+  member:
+    id: 0
+    display-name: '&9Miembro'
+    prefix: ''
+    ladderPosition: 0
+    default: true
+    permissions:
+      - CHAT

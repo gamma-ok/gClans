@@ -10,38 +10,25 @@ import me.gamma.clans.listeners.PlayerDeathListener;
 import me.gamma.clans.managers.ClanManager;
 import me.gamma.clans.managers.ConfirmationManager;
 import me.gamma.clans.managers.InvitationManager;
+import me.gamma.clans.managers.RankManager;
 import me.gamma.clans.storage.SQLiteProvider;
 import me.gamma.clans.storage.StorageProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-/**
- * Clase principal de gClans v2.0.0 — KitPvP Edition.
- *
- * Ciclo de vida: onEnable → config → BD → managers → caché → listeners →
- * comandos → PAPI onDisable → limpiar estados → guardar datos → cerrar BD
- */
 public class Clans extends JavaPlugin {
 
-	// -------------------------------------------------------
-	// Componentes
-	// -------------------------------------------------------
 	private ConfigManager configManager;
 	private StorageProvider storageProvider;
 	private ClanManager clanManager;
 	private ConfirmationManager confirmationManager;
 	private InvitationManager invitationManager;
 	private ClansExpansion papiExpansion;
-
-	// -------------------------------------------------------
-	// onEnable
-	// -------------------------------------------------------
+	private RankManager rankManager;
 
 	@Override
 	public void onEnable() {
 		long start = System.currentTimeMillis();
-		getLogger().info("╔═══════════════════════════╗");
-		getLogger().info("║   gClans v2.0.0  KitPvP  ║");
-		getLogger().info("╚═══════════════════════════╝");
+		getLogger().info("gClans v2.0.0 created by gamma");
 
 		if (!initConfig()) {
 			disable("Error cargando configuración.");
@@ -62,10 +49,6 @@ public class Clans extends JavaPlugin {
 		getLogger().info("Plugin activado en " + ms + "ms.");
 	}
 
-	// -------------------------------------------------------
-	// onDisable
-	// -------------------------------------------------------
-
 	@Override
 	public void onDisable() {
 		getLogger().info("Deteniendo gClans...");
@@ -77,7 +60,6 @@ public class Clans extends JavaPlugin {
 
 		getServer().getScheduler().cancelTasks(this);
 
-		// Guardar jugadores online antes de cerrar
 		if (clanManager != null) {
 			getServer().getOnlinePlayers().forEach(p -> clanManager.unloadPlayer(p.getUniqueId()));
 		}
@@ -86,10 +68,6 @@ public class Clans extends JavaPlugin {
 			storageProvider.shutdown();
 		getLogger().info("gClans desactivado correctamente.");
 	}
-
-	// -------------------------------------------------------
-	// Inicialización modular
-	// -------------------------------------------------------
 
 	private boolean initConfig() {
 		try {
@@ -109,7 +87,6 @@ public class Clans extends JavaPlugin {
 		try {
 			String type = configManager.getDbType();
 			if ("mysql".equals(type)) {
-				// MySQLProvider implementable en el futuro con HikariCP
 				getLogger().warning("MySQL no disponible aún. Usando SQLite.");
 			}
 			storageProvider = new SQLiteProvider(this);
@@ -124,16 +101,13 @@ public class Clans extends JavaPlugin {
 	}
 
 	private void initManagers() {
+		rankManager = new RankManager(this);
 		clanManager = new ClanManager(this, storageProvider);
 		confirmationManager = new ConfirmationManager(this);
 		invitationManager = new InvitationManager(this);
 		getLogger().info("Managers inicializados.");
 	}
 
-	/**
-	 * Carga clanes desde BD de forma asíncrona. Los jugadores que se conecten antes
-	 * de que termine verán su clan en cuanto cargue.
-	 */
 	private void loadDataAsync() {
 		clanManager.loadAll().thenRun(() -> getLogger().info("Caché de clanes lista.")).exceptionally(ex -> {
 			getLogger().severe("Error cargando caché: " + ex.getMessage());
@@ -172,10 +146,6 @@ public class Clans extends JavaPlugin {
 		getServer().getPluginManager().disablePlugin(this);
 	}
 
-	// -------------------------------------------------------
-	// Getters (Service Locator)
-	// -------------------------------------------------------
-
 	public ConfigManager getConfigManager() {
 		return configManager;
 	}
@@ -198,5 +168,9 @@ public class Clans extends JavaPlugin {
 
 	public ClansExpansion getPapiExpansion() {
 		return papiExpansion;
+	}
+
+	public RankManager getRankManager() {
+		return rankManager;
 	}
 }

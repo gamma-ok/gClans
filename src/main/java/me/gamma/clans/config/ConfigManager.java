@@ -8,10 +8,6 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Gestor de configuración YAML. Carga config.yml, messages.yml y help.yml con
- * fusión de defaults.
- */
 public class ConfigManager {
 
 	private final Clans plugin;
@@ -19,10 +15,12 @@ public class ConfigManager {
 	private FileConfiguration config;
 	private FileConfiguration messages;
 	private FileConfiguration help;
+	private FileConfiguration adminHelp;
 
 	private File configFile;
 	private File messagesFile;
 	private File helpFile;
+	private File adminHelpFile;
 
 	public ConfigManager(Clans plugin) {
 		this.plugin = plugin;
@@ -32,15 +30,12 @@ public class ConfigManager {
 		loadConfig();
 		loadMessages();
 		loadHelp();
+		loadAdminHelp();
 	}
 
 	public void reloadAll() {
 		loadAll();
 	}
-
-	// -------------------------------------------------------
-	// Carga individual
-	// -------------------------------------------------------
 
 	private void loadConfig() {
 		configFile = new File(plugin.getDataFolder(), "config.yml");
@@ -66,16 +61,20 @@ public class ConfigManager {
 		mergeDefaults(help, "help.yml");
 	}
 
+	private void loadAdminHelp() {
+		adminHelpFile = new File(plugin.getDataFolder(), "admin_help.yml");
+		if (!adminHelpFile.exists())
+			plugin.saveResource("admin_help.yml", false);
+		adminHelp = YamlConfiguration.loadConfiguration(adminHelpFile);
+		mergeDefaults(adminHelp, "admin_help.yml");
+	}
+
 	private void mergeDefaults(FileConfiguration cfg, String resource) {
 		java.io.InputStream stream = plugin.getResource(resource);
 		if (stream == null)
 			return;
 		cfg.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(stream, StandardCharsets.UTF_8)));
 	}
-
-	// -------------------------------------------------------
-	// Acceso a config.yml
-	// -------------------------------------------------------
 
 	public String getDbType() {
 		return config.getString("database.type", "sqlite").toLowerCase();
@@ -185,8 +184,13 @@ public class ConfigManager {
 		return config.getInt("levels.max-level", 50);
 	}
 
-	public int getSlotsPerLevel() {
-		return config.getInt("levels.slots-per-level", 1);
+	/** Slots a añadir al alcanzar exactamente ese nivel (desde tabla en config). */
+	public int getSlotsForLevel(int level) {
+		return config.getInt("levels.slots-per-level." + level, 0);
+	}
+
+	public int getMaxSlots() {
+		return config.getInt("clans.max-slots", 30);
 	}
 
 	public long getCreateCooldown() {
@@ -237,21 +241,26 @@ public class ConfigManager {
 		return config.getString("placeholders.no-clan-text", "Sin clan");
 	}
 
+	public String getNoPrefixText() {
+		return config.getString("placeholders.no-prefix-text", "Sin prefijo");
+	}
+
+	public String getNamePlaceholderColor() {
+		return config.getString("placeholders.name-color", "e");
+	}
+
+	public String getPrefixPlaceholderColor() {
+		return config.getString("placeholders.prefix-color", "f");
+	}
+
 	public String getNoClanZero() {
 		return config.getString("placeholders.no-clan-zero", "0");
 	}
-
-	// -------------------------------------------------------
-	// Acceso a messages.yml
-	// -------------------------------------------------------
 
 	public String getPrefix() {
 		return color(messages.getString("prefix", "&8[&6gClans&8] "));
 	}
 
-	/**
-	 * Obtiene un mensaje con prefijo y con reemplazos aplicados.
-	 */
 	public String getMessage(String path, String... replacements) {
 		String raw = messages.getString(path);
 		if (raw == null) {
@@ -261,25 +270,18 @@ public class ConfigManager {
 		return color(applyReplacements(getPrefix() + raw, replacements));
 	}
 
-	/**
-	 * Obtiene un mensaje SIN prefijo (para líneas de info, ayuda, top, etc.).
-	 */
 	public String getRaw(String path, String... replacements) {
 		String raw = messages.getString(path, "&cMensaje no configurado: " + path);
 		return color(applyReplacements(raw, replacements));
 	}
 
-	// -------------------------------------------------------
-	// Acceso a help.yml
-	// -------------------------------------------------------
-
 	public FileConfiguration getHelpConfig() {
 		return help;
 	}
 
-	// -------------------------------------------------------
-	// Getters de configuraciones raw
-	// -------------------------------------------------------
+	public FileConfiguration getAdminHelpConfig() {
+		return adminHelp;
+	}
 
 	public FileConfiguration getConfig() {
 		return config;
@@ -289,11 +291,6 @@ public class ConfigManager {
 		return messages;
 	}
 
-	// -------------------------------------------------------
-	// Utilidades estáticas
-	// -------------------------------------------------------
-
-	/** Traduce códigos &X a §X. */
 	public static String color(String text) {
 		if (text == null)
 			return "";

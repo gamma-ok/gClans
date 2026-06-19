@@ -1,35 +1,28 @@
 package me.gamma.clans.models;
 
-/**
- * Jerarquía de rangos del clan. MEMBER(0) < CO_LEADER(1) < LEADER(2)
- */
 public enum Rank {
 
-	MEMBER("Member", "&9", 0), CO_LEADER("Co-Leader", "&c", 1), LEADER("Leader", "&a", 2);
+	MEMBER("Member", "&9", 0), CAPTAIN("Captain", "&b", 1), CO_LEADER("Co-Leader", "&c", 2), LEADER("Leader", "&6", 3);
 
-	private final String displayName;
-	private final String colorCode;
+	private final String defaultDisplayName;
+	private final String defaultColorCode;
 	private final int ladder;
 
-	Rank(String displayName, String colorCode, int ladder) {
-		this.displayName = displayName;
-		this.colorCode = colorCode;
+	Rank(String defaultDisplayName, String defaultColorCode, int ladder) {
+		this.defaultDisplayName = defaultDisplayName;
+		this.defaultColorCode = defaultColorCode;
 		this.ladder = ladder;
 	}
 
-	// -------------------------------------------------------
-	// API
-	// -------------------------------------------------------
-
-	/** Comprueba si este rango es >= al requerido. */
 	public boolean isAtLeast(Rank required) {
 		return this.ladder >= required.ladder;
 	}
 
-	/** Siguiente rango en la jerarquía, o null si es LEADER. */
 	public Rank next() {
 		switch (this) {
 		case MEMBER:
+			return CAPTAIN;
+		case CAPTAIN:
 			return CO_LEADER;
 		case CO_LEADER:
 			return LEADER;
@@ -38,11 +31,12 @@ public enum Rank {
 		}
 	}
 
-	/** Rango anterior, o null si es MEMBER. */
 	public Rank previous() {
 		switch (this) {
-		case CO_LEADER:
+		case CAPTAIN:
 			return MEMBER;
+		case CO_LEADER:
+			return CAPTAIN;
 		case LEADER:
 			return CO_LEADER;
 		default:
@@ -51,15 +45,15 @@ public enum Rank {
 	}
 
 	public String getColoredName() {
-		return colorCode.replace("&", "§") + displayName;
+		return defaultColorCode.replace("&", "§") + defaultDisplayName;
 	}
 
 	public String getDisplayName() {
-		return displayName;
+		return defaultDisplayName;
 	}
 
 	public String getColorCode() {
-		return colorCode;
+		return defaultColorCode;
 	}
 
 	public int getLadder() {

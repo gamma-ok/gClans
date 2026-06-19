@@ -18,7 +18,6 @@ public class SetLeaderCommand extends AbstractClanCommand {
 		if (!requireArgs(player, args, 1))
 			return;
 
-		// /clan setleader <player> confirm
 		boolean isConfirm = args.length >= 2 && "confirm".equalsIgnoreCase(args[1]);
 		if (isConfirm) {
 			boolean done = plugin.getConfirmationManager().confirm(player.getUniqueId(), Type.SET_LEADER);

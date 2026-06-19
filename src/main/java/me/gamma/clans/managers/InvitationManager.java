@@ -7,22 +7,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Gestiona invitaciones pendientes con TTL automático.
- */
 public class InvitationManager {
 
 	private static class Invitation {
 		final String clanId;
 		final String clanName;
 		final UUID inviterUuid;
+		final String inviterName;
 		final long expiresAt;
 		int taskId = -1;
 
-		Invitation(String clanId, String clanName, UUID inviterUuid, long expiresAt) {
+		Invitation(String clanId, String clanName, UUID inviterUuid, String inviterName, long expiresAt) {
 			this.clanId = clanId;
 			this.clanName = clanName;
 			this.inviterUuid = inviterUuid;
+			this.inviterName = inviterName;
 			this.expiresAt = expiresAt;
 		}
 	}
@@ -36,19 +35,18 @@ public class InvitationManager {
 		this.timeoutSeconds = plugin.getConfigManager().getInviteTimeout();
 	}
 
-	/**
-	 * Registra una invitación y programa su expiración.
-	 */
-	public void invite(UUID invited, String clanId, String clanName, UUID inviter) {
-		cancel(invited); // cancelar invitación previa si existe
+	public void invite(UUID invited, String clanId, String clanName, UUID inviterUuid, String inviterName) {
+		cancel(invited);
 
 		long expiresAt = System.currentTimeMillis() + timeoutSeconds * 1000L;
-		Invitation inv = new Invitation(clanId, clanName, inviter, expiresAt);
+		Invitation inv = new Invitation(clanId, clanName, inviterUuid, inviterName, expiresAt);
 
 		int taskId = plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-			invitations.remove(invited);
-			// Notificar al invitador que la invitación caducó
-			Player inviterPlayer = plugin.getServer().getPlayer(inviter);
+			Invitation expired = invitations.remove(invited);
+			if (expired == null)
+				return;
+
+			Player inviterPlayer = plugin.getServer().getPlayer(inviterUuid);
 			if (inviterPlayer != null && inviterPlayer.isOnline()) {
 				Player invitedPlayer = plugin.getServer().getPlayer(invited);
 				String targetName = invitedPlayer != null ? invitedPlayer.getName()
@@ -56,10 +54,22 @@ public class InvitationManager {
 				inviterPlayer
 						.sendMessage(plugin.getConfigManager().getMessage("invite.expired", "{target}", targetName));
 			}
+
+			Player invitedPlayer = plugin.getServer().getPlayer(invited);
+			if (invitedPlayer != null && invitedPlayer.isOnline()) {
+				invitedPlayer.sendMessage(plugin.getConfigManager().getMessage("confirmation.expired", "{action}",
+						"invite al clan " + expired.clanName, "{time}", String.valueOf(timeoutSeconds)));
+			}
 		}, timeoutSeconds * 20L).getTaskId();
 
 		inv.taskId = taskId;
 		invitations.put(invited, inv);
+	}
+
+	public void invite(UUID invited, String clanId, String clanName, UUID inviterUuid) {
+		Player inviter = plugin.getServer().getPlayer(inviterUuid);
+		String name = inviter != null ? inviter.getName() : inviterUuid.toString().substring(0, 8);
+		invite(invited, clanId, clanName, inviterUuid, name);
 	}
 
 	public boolean hasInvitationFor(UUID invited, String clanId) {
@@ -71,6 +81,17 @@ public class InvitationManager {
 			return false;
 		}
 		return inv.clanId.equals(clanId);
+	}
+
+	public boolean hasInvitationFromPlayer(UUID invited, String inviterName) {
+		Invitation inv = invitations.get(invited);
+		if (inv == null)
+			return false;
+		if (System.currentTimeMillis() > inv.expiresAt) {
+			invitations.remove(invited);
+			return false;
+		}
+		return inv.inviterName.equalsIgnoreCase(inviterName);
 	}
 
 	public boolean hasAnyInvitation(UUID invited) {
@@ -92,6 +113,25 @@ public class InvitationManager {
 	public String getInvitedClanName(UUID invited) {
 		Invitation inv = invitations.get(invited);
 		return inv != null ? inv.clanName : null;
+	}
+
+	public String getInviterName(UUID invited) {
+		Invitation inv = invitations.get(invited);
+		return inv != null ? inv.inviterName : null;
+	}
+
+	public void cancelAndNotify(UUID invited, String cancellerName) {
+		Invitation inv = invitations.get(invited);
+		if (inv == null)
+			return;
+
+		cancel(invited);
+
+		Player invitedPlayer = plugin.getServer().getPlayer(invited);
+		if (invitedPlayer != null && invitedPlayer.isOnline()) {
+			invitedPlayer.sendMessage(plugin.getConfigManager().getMessage("uninvite.cancelled-target", "{clan}",
+					inv.clanName, "{player}", cancellerName));
+		}
 	}
 
 	public void cancel(UUID invited) {

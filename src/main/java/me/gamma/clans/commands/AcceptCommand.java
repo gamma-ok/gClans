@@ -1,18 +1,16 @@
 package me.gamma.clans.commands;
 
 import me.gamma.clans.Clans;
+import me.gamma.clans.models.RankPermission;
+import me.gamma.clans.managers.InvitationManager;
 import me.gamma.clans.models.Clan;
 import me.gamma.clans.models.ClanPlayer;
 import org.bukkit.entity.Player;
 
-/**
- * /clan accept <clan> Acepta la invitación al clan especificado. También es el
- * comando ejecutado al hacer click en el mensaje de invitación.
- */
 public class AcceptCommand extends AbstractClanCommand {
 
 	public AcceptCommand(Clans plugin) {
-		super(plugin, "accept", "gclans.use", null, false);
+		super(plugin, "accept", "gclans.use", (RankPermission) null, false);
 	}
 
 	@Override
@@ -25,36 +23,41 @@ public class AcceptCommand extends AbstractClanCommand {
 			return;
 		}
 
+		InvitationManager im = plugin.getInvitationManager();
 		String input = args[0];
+		String resolvedClanId = null;
 
-		// Buscar clan (por nombre, case-insensitive)
 		Clan clan = cm.getClanByName(input);
-		if (clan == null) {
-			msg(player, "general.clan-not-found", "{clan}", input);
-			return;
+		if (clan != null && im.hasInvitationFor(player.getUniqueId(), clan.getId())) {
+			resolvedClanId = clan.getId();
 		}
 
-		// Verificar invitación activa
-		if (!plugin.getInvitationManager().hasInvitationFor(player.getUniqueId(), clan.getId())) {
+		if (resolvedClanId == null && im.hasInvitationFromPlayer(player.getUniqueId(), input)) {
+			resolvedClanId = im.getInvitedClanId(player.getUniqueId());
+			if (resolvedClanId != null) {
+				clan = cm.getClan(resolvedClanId);
+			}
+		}
+
+		if (resolvedClanId == null || clan == null) {
 			msg(player, "accept.not-invited");
 			return;
 		}
 
-		// Verificar slots
 		if (clan.isFull()) {
 			msg(player, "general.invalid-usage");
 			return;
 		}
 
-		plugin.getInvitationManager().cancel(player.getUniqueId());
+		im.cancel(player.getUniqueId());
 		final String clanName = clan.getName();
+		final String clanId = clan.getId();
+		final Clan finalClan = clan;
 
-		cm.addMember(clan.getId(), player.getUniqueId())
+		cm.addMember(clanId, player.getUniqueId())
 				.thenRun(() -> plugin.getServer().getScheduler().runTask(plugin, () -> {
 					msg(player, "accept.success-self", "{clan}", clanName);
-
-					// Notificar a miembros online
-					clan.getMembers().keySet().forEach(mid -> {
+					finalClan.getMembers().keySet().forEach(mid -> {
 						if (!mid.equals(player.getUniqueId())) {
 							Player m = plugin.getServer().getPlayer(mid);
 							if (m != null)

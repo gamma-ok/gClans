@@ -11,10 +11,14 @@ me\gamma\clans\commands\UninviteCommand.class
 me\gamma\clans\managers\InvitationManager$Invitation.class
 me\gamma\clans\commands\InviteCommand.class
 me\gamma\clans\commands\StatsCommand.class
+me\gamma\clans\commands\admin\AdminCommandExecutor$PendingAdminAction$Type.class
 me\gamma\clans\managers\ConfirmationManager.class
+me\gamma\clans\commands\admin\AdminCommandExecutor.class
+me\gamma\clans\commands\admin\AdminHelpCommand.class
 me\gamma\clans\commands\InfoCommand.class
 me\gamma\clans\models\Rank.class
 me\gamma\clans\models\Clan.class
+me\gamma\clans\commands\admin\AdminCommandExecutor$PendingAdminAction.class
 me\gamma\clans\managers\ConfirmationManager$Type.class
 me\gamma\clans\managers\ConfirmationManager$Pending.class
 me\gamma\clans\listeners\ClanChatListener.class
@@ -22,7 +26,9 @@ me\gamma\clans\storage\SQLiteProvider.class
 me\gamma\clans\commands\BreakAllyCommand.class
 me\gamma\clans\config\ConfigManager.class
 me\gamma\clans\commands\PromoteCommand.class
+me\gamma\clans\models\RankPermission.class
 me\gamma\clans\commands\LeaveCommand.class
+me\gamma\clans\managers\RankManager.class
 me\gamma\clans\commands\PrefixCommand.class
 me\gamma\clans\storage\StorageProvider.class
 me\gamma\clans\commands\ListCommand.class
@@ -37,6 +43,7 @@ me\gamma\clans\commands\DisbandCommand.class
 me\gamma\clans\commands\ClanCommandExecutor.class
 me\gamma\clans\storage\SQLiteProvider$SqlSupplier.class
 me\gamma\clans\commands\AcceptCommand.class
+me\gamma\clans\models\Rank$1.class
 me\gamma\clans\commands\AbstractClanCommand.class
 me\gamma\clans\listeners\PlayerConnectionListener.class
 me\gamma\clans\listeners\FriendlyFireListener.class

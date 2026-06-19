@@ -1,20 +1,27 @@
 package me.gamma.clans.managers;
 
 import me.gamma.clans.Clans;
+import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-/**
- * Gestiona confirmaciones temporales para acciones críticas (disband,
- * setleader).
- */
 public class ConfirmationManager {
 
 	public enum Type {
-		DISBAND, SET_LEADER
+		DISBAND("disband"), SET_LEADER("setleader");
+
+		private final String actionName;
+
+		Type(String actionName) {
+			this.actionName = actionName;
+		}
+
+		public String getActionName() {
+			return actionName;
+		}
 	}
 
 	private static class Pending {
@@ -41,27 +48,26 @@ public class ConfirmationManager {
 		this.timeoutSeconds = plugin.getConfigManager().getConfirmTimeout();
 	}
 
-	/**
-	 * Registra una solicitud de confirmación.
-	 * 
-	 * @return true si fue registrada correctamente.
-	 */
 	public boolean request(UUID uuid, Type type, Object payload, Consumer<UUID> onConfirm) {
 		cancelTask(uuid);
 
 		long expiresAt = System.currentTimeMillis() + timeoutSeconds * 1000L;
 		Pending p = new Pending(type, payload, onConfirm, expiresAt);
 
-		int taskId = plugin.getServer().getScheduler()
-				.runTaskLater(plugin, () -> pending.remove(uuid), timeoutSeconds * 20L).getTaskId();
+		int taskId = plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+			pending.remove(uuid);
+			Player player = plugin.getServer().getPlayer(uuid);
+			if (player != null && player.isOnline()) {
+				player.sendMessage(plugin.getConfigManager().getMessage("confirmation.expired", "{action}",
+						type.getActionName(), "{time}", String.valueOf(timeoutSeconds)));
+			}
+		}, timeoutSeconds * 20L).getTaskId();
+
 		p.taskId = taskId;
 		pending.put(uuid, p);
 		return true;
 	}
 
-	/**
-	 * Intenta confirmar la acción. Retorna true si se ejecutó.
-	 */
 	public boolean confirm(UUID uuid, Type type) {
 		Pending p = pending.get(uuid);
 		if (p == null || p.type != type)
@@ -70,7 +76,6 @@ public class ConfirmationManager {
 			pending.remove(uuid);
 			return false;
 		}
-
 		cancelTask(uuid);
 		pending.remove(uuid);
 		p.onConfirm.accept(uuid);
@@ -99,8 +104,7 @@ public class ConfirmationManager {
 
 	private void cancelTask(UUID uuid) {
 		Pending p = pending.get(uuid);
-		if (p != null && p.taskId != -1) {
+		if (p != null && p.taskId != -1)
 			plugin.getServer().getScheduler().cancelTask(p.taskId);
-		}
 	}
 }

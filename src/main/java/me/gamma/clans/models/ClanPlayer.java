@@ -2,50 +2,29 @@ package me.gamma.clans.models;
 
 import java.util.UUID;
 
-/**
- * Representa a un jugador dentro del sistema de clanes. Todos los datos en
- * memoria; persistencia delegada a StorageProvider.
- */
 public class ClanPlayer {
 
-	// -------------------------------------------------------
-	// Identidad
-	// -------------------------------------------------------
 	private final UUID uuid;
 	private String name;
 
-	// -------------------------------------------------------
-	// Estado de clan
-	// -------------------------------------------------------
-	private String clanId; // null = sin clan
-	private Rank rank; // null = sin clan
+	private String clanId;
+	private Rank rank;
 
-	// -------------------------------------------------------
-	// Chat toggles
-	// -------------------------------------------------------
 	private boolean clanChatActive;
 	private boolean allyChatActive;
 
-	// -------------------------------------------------------
-	// Estadísticas personales
-	// -------------------------------------------------------
 	private int kills;
 	private int deaths;
-	private double points; // puede ser negativo
-	private int killstreak; // racha activa
-	private int bestKillstreak; // mejor racha histórica
+	private double points;
+	private int killstreak;
+	private int bestKillstreak;
 
-	// -------------------------------------------------------
-	// Cooldown
-	// -------------------------------------------------------
-	/** Timestamp (ms) hasta el que el jugador no puede crear un clan. */
+	private int clanKills;
+
 	private long createCooldownUntil;
 
-	// -------------------------------------------------------
-	// Constructor (carga desde BD)
-	// -------------------------------------------------------
 	public ClanPlayer(UUID uuid, String name, String clanId, Rank rank, int kills, int deaths, double points,
-			int bestKillstreak, long createCooldownUntil) {
+			int bestKillstreak, long createCooldownUntil, int clanKills) {
 		this.uuid = uuid;
 		this.name = name;
 		this.clanId = clanId;
@@ -53,14 +32,16 @@ public class ClanPlayer {
 		this.kills = kills;
 		this.deaths = deaths;
 		this.points = points;
-		this.killstreak = 0; // la racha activa no persiste entre sesiones
+		this.killstreak = 0;
 		this.bestKillstreak = bestKillstreak;
 		this.createCooldownUntil = createCooldownUntil;
+		this.clanKills = clanKills;
 	}
 
-	// -------------------------------------------------------
-	// API de consulta
-	// -------------------------------------------------------
+	public ClanPlayer(UUID uuid, String name, String clanId, Rank rank, int kills, int deaths, double points,
+			int bestKillstreak, long createCooldownUntil) {
+		this(uuid, name, clanId, rank, kills, deaths, points, bestKillstreak, createCooldownUntil, 0);
+	}
 
 	public boolean hasClan() {
 		return clanId != null;
@@ -82,13 +63,10 @@ public class ClanPlayer {
 		return deaths == 0 ? kills : Math.round((double) kills / deaths * 100.0) / 100.0;
 	}
 
-	// -------------------------------------------------------
-	// API de mutación
-	// -------------------------------------------------------
-
 	public void joinClan(String clanId, Rank rank) {
 		this.clanId = clanId;
 		this.rank = rank;
+		this.clanKills = 0;
 	}
 
 	public void leaveClan() {
@@ -97,18 +75,17 @@ public class ClanPlayer {
 		this.clanChatActive = false;
 		this.allyChatActive = false;
 		this.killstreak = 0;
+		this.clanKills = 0;
 	}
 
-	/** Registra una kill: incrementa racha, actualiza mejor racha. */
 	public void registerKill() {
 		kills++;
+		clanKills++;
 		killstreak++;
-		if (killstreak > bestKillstreak) {
+		if (killstreak > bestKillstreak)
 			bestKillstreak = killstreak;
-		}
 	}
 
-	/** Registra una muerte: resetea racha activa. */
 	public void registerDeath() {
 		deaths++;
 		killstreak = 0;
@@ -125,10 +102,6 @@ public class ClanPlayer {
 		if (active)
 			this.clanChatActive = false;
 	}
-
-	// -------------------------------------------------------
-	// Getters / Setters
-	// -------------------------------------------------------
 
 	public UUID getUuid() {
 		return uuid;
@@ -188,6 +161,14 @@ public class ClanPlayer {
 
 	public int getBestKillstreak() {
 		return bestKillstreak;
+	}
+
+	public int getClanKills() {
+		return clanKills;
+	}
+
+	public void setClanKills(int v) {
+		this.clanKills = v;
 	}
 
 	public long getCreateCooldownUntil() {

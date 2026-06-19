@@ -21,26 +21,46 @@ public class BreakAllyCommand extends AbstractClanCommand {
 		if (myClan == null)
 			return;
 
-		Clan target = cm.getClanByName(args[0]);
+		Clan target = cm.findClanByNameOrLeader(args[0]);
+
 		if (target == null || !myClan.isAlliedWith(target.getId())) {
-			msg(player, "ally.not-allies", "{clan}", args[0]);
+			msg(player, "breakally.not-found");
 			return;
 		}
 
 		final String myName = myClan.getName();
 		final String targetName = target.getName();
+		final String myId = myClan.getId();
+		final String targetId = target.getId();
 
-		cm.breakAlliance(myClan.getId(), target.getId())
-				.thenRun(() -> plugin.getServer().getScheduler().runTask(plugin, () -> {
-					msg(player, "breakally.success-self", "{clan}", targetName);
-					target.getMembers().keySet().forEach(uuid -> {
-						Player m = plugin.getServer().getPlayer(uuid);
-						if (m != null)
-							m.sendMessage(cfg.getMessage("breakally.success-other", "{clan}", myName));
-					});
-				})).exceptionally(ex -> {
-					plugin.getLogger().severe(ex.getMessage());
-					return null;
-				});
+		cm.breakAlliance(myId, targetId).thenRun(() -> plugin.getServer().getScheduler().runTask(plugin, () -> {
+			disableAllyChatIfNeeded(myClan);
+			disableAllyChatIfNeeded(target);
+
+			msg(player, "breakally.success-self", "{clan}", targetName);
+			target.getMembers().keySet().forEach(uuid -> {
+				Player m = plugin.getServer().getPlayer(uuid);
+				if (m != null)
+					m.sendMessage(cfg.getMessage("breakally.success-other", "{clan}", myName));
+			});
+		})).exceptionally(ex -> {
+			plugin.getLogger().severe(ex.getMessage());
+			return null;
+		});
+	}
+
+	private void disableAllyChatIfNeeded(Clan clan) {
+		if (!clan.getAllies().isEmpty())
+			return;
+
+		clan.getMembers().keySet().forEach(uuid -> {
+			ClanPlayer cp = cm.getPlayer(uuid);
+			if (cp != null && cp.isAllyChatActive()) {
+				cp.setAllyChatActive(false);
+				Player m = plugin.getServer().getPlayer(uuid);
+				if (m != null)
+					m.sendMessage(cfg.getMessage("chat.ally.auto-disabled"));
+			}
+		});
 	}
 }

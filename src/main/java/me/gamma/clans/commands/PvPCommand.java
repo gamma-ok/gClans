@@ -6,10 +6,6 @@ import me.gamma.clans.models.ClanPlayer;
 import me.gamma.clans.models.Rank;
 import org.bukkit.entity.Player;
 
-/**
- * /clan pvp <on|off> Activa o desactiva el PvP entre miembros del clan. Solo
- * Co-Líder o superior. NO afecta la protección de aliados.
- */
 public class PvPCommand extends AbstractClanCommand {
 
 	public PvPCommand(Clans plugin) {
@@ -34,13 +30,11 @@ public class PvPCommand extends AbstractClanCommand {
 		boolean enable = arg.equals("on");
 		clan.setPvpEnabled(enable);
 
-		// Persistir asíncronamente
 		plugin.getStorageProvider().updateClan(clan).exceptionally(ex -> {
 			plugin.getLogger().severe(ex.getMessage());
 			return null;
 		});
 
-		// Notificar a todo el clan
 		String msgKey = enable ? "pvp.enabled" : "pvp.disabled";
 		cm.notifyClan(clan, msgKey);
 	}

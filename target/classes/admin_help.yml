@@ -1,0 +1,60 @@
+# ============================================================
+# gClans v2.0.0 — Comandos de Ayuda (Admin) /clan admin
+# Cada page-X es autocontenida (header + líneas + footer).
+# Placeholders: {page}, {max}, {next}
+# ============================================================
+
+pages:
+  page-1:
+    - '&7&m-------------------------------------------------'
+    - '&6&lClan Admin Help &7(Page &f{page}/{max}&7)'
+    - ' '
+    - '&6Gestión de Clanes:'
+    - '  &e/clan admin delete <clan> [confirm] &7- &fElimina un clan.'
+    - '  &e/clan admin rename <clan> <nuevo-nombre> &7- &fRenombra un clan.'
+    - '  &e/clan admin prefix <clan> <prefix> &7- &fCambia el prefix.'
+    - '  &e/clan admin setleader <clan> <jugador> [confirm] &7- &fTransfiere liderazgo.'
+    - '  &e/clan admin reload &7- &fRecarga la configuración.'
+    - ' '
+    - '&6Usa &f/clan admin help {next} &6para más comandos.'
+    - '&7&m-------------------------------------------------'
+
+  page-2:
+    - '&7&m-------------------------------------------------'
+    - '&6&lClan Admin Help &7(Page &f{page}/{max}&7)'
+    - ' '
+    - '&6Gestión de Miembros:'
+    - '  &e/clan admin add <jugador> <clan> &7- &fAñade jugador a un clan.'
+    - '  &e/clan admin kick <jugador> <clan> &7- &fExpulsa jugador de un clan.'
+    - '  &e/clan admin setrank <jugador> <rango> &7- &fCambia el rango de un jugador.'
+    - '  &e/clan admin cooldown clear <jugador> &7- &fElimina el cooldown de creación.'
+    - ' '
+    - '&fRangos: &emember&f, &ecaptain&f, &ecoleader&f, &eleader'
+    - ' '
+    - '&6Usa &f/clan admin help {next} &6para más comandos.'
+    - '&7&m-------------------------------------------------'
+
+  page-3:
+    - '&7&m-------------------------------------------------'
+    - '&6&lClan Admin Help &7(Page &f{page}/{max}&7)'
+    - ' '
+    - '&6Gestión de Estadísticas:'
+    - '  &e/clan admin points <add/remove/set> <clan> <count> &7- &fModifica puntos.'
+    - '  &e/clan admin kills <add/remove/set> <clan> <count> &7- &fModifica kills.'
+    - '  &e/clan admin level set <clan> <nivel> &7- &fEstablece el nivel.'
+    - '  &e/clan admin xp <add/set> <clan> <count> &7- &fModifica la XP.'
+    - '  &e/clan admin slots set <clan> <count> &7- &fCambia los slots.'
+    - '  &e/clan admin reset <clan> &7- &fReinicia todas las stats.'
+    - ' '
+    - '&6Usa &f/clan admin help {next} &6para más comandos.'
+    - '&7&m-------------------------------------------------'
+
+  page-4:
+    - '&7&m-------------------------------------------------'
+    - '&6&lClan Admin Help &7(Page &f{page}/{max}&7)'
+    - ' '
+    - '&6Gestión de Alianzas:'
+    - '  &e/clan admin ally add <clan1> <clan2> &7- &fFuerza una alianza.'
+    - '  &e/clan admin ally remove <clan1> <clan2> &7- &fElimina una alianza.'
+    - ' '
+    - '&7&m-------------------------------------------------'

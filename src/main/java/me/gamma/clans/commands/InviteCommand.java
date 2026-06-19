@@ -11,10 +11,6 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 
-/**
- * /clan invite <player> Envía una invitación con un componente clickeable
- * [ACEPTAR]. Requiere Co-Leader o superior.
- */
 public class InviteCommand extends AbstractClanCommand {
 
 	public InviteCommand(Clans plugin) {
@@ -39,7 +35,12 @@ public class InviteCommand extends AbstractClanCommand {
 
 		ClanPlayer targetCp = cm.getPlayer(target.getUniqueId());
 		if (targetCp != null && targetCp.hasClan()) {
-			msg(player, "general.target-already-in-clan", "{target}", target.getName());
+			Clan myClanCheck = cm.getClan(cp.getClanId());
+			if (myClanCheck != null && myClanCheck.isMember(target.getUniqueId())) {
+				msg(player, "invite.target-already-member", "{target}", target.getName());
+			} else {
+				msg(player, "general.target-already-in-clan", "{target}", target.getName());
+			}
 			return;
 		}
 
@@ -59,49 +60,34 @@ public class InviteCommand extends AbstractClanCommand {
 
 		plugin.getInvitationManager().invite(target.getUniqueId(), clan.getId(), clan.getName(), player.getUniqueId());
 
-		// Notificar al invitador
 		msg(player, "invite.sent", "{target}", target.getName());
 
-		// Enviar mensaje clickeable al invitado
 		sendClickableInvite(target, player.getName(), clan.getName());
 	}
 
-	/**
-	 * Construye y envía el mensaje de invitación con botón [ACEPTAR] clickeable.
-	 * Compatible con Spigot 1.8.8 usando BungeeCord ChatAPI.
-	 */
 	private void sendClickableInvite(Player target, String inviterName, String clanName) {
-		// Parte 1: texto informativo
 		String infoText = cfg.getMessage("invite.received", "{player}", inviterName, "{clan}", clanName);
 
-		// Eliminamos el placeholder del click ya que lo hacemos con componente
-		// El messages.yml tiene: "... Haz &e[click aquí] &ao usa &e/clan accept
-		// {clan}&a."
-		// Partimos el mensaje en dos: antes y después de [click aquí]
 		String marker = ConfigManager.color("&e[click aquí]");
 		int markerIdx = infoText.indexOf(marker);
 
 		TextComponent full;
 
 		if (markerIdx >= 0) {
-			// Texto antes del botón
 			TextComponent before = new TextComponent(infoText.substring(0, markerIdx));
 
-			// Botón clickeable
 			TextComponent clickable = new TextComponent(marker);
 			clickable.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/clan accept " + clanName));
 			clickable.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
 					new ComponentBuilder(ConfigManager.color("&aHaz click para unirte al clan &e" + clanName))
 							.create()));
 
-			// Texto después del botón
 			TextComponent after = new TextComponent(infoText.substring(markerIdx + marker.length()));
 
 			full = new TextComponent(before);
 			full.addExtra(clickable);
 			full.addExtra(after);
 		} else {
-			// Fallback: mensaje simple sin partir
 			full = new TextComponent(infoText);
 			full.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/clan accept " + clanName));
 		}

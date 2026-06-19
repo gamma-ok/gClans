@@ -1,6 +1,7 @@
 package me.gamma.clans.commands;
 
 import me.gamma.clans.Clans;
+import me.gamma.clans.models.RankPermission;
 import me.gamma.clans.models.Clan;
 import me.gamma.clans.models.ClanPlayer;
 import me.gamma.clans.models.Rank;
@@ -9,7 +10,7 @@ import org.bukkit.entity.Player;
 public class LeaveCommand extends AbstractClanCommand {
 
 	public LeaveCommand(Clans plugin) {
-		super(plugin, "leave", "gclans.use", null, true);
+		super(plugin, "leave", "gclans.use", (RankPermission) null, true);
 	}
 
 	@Override

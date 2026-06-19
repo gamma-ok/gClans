@@ -12,37 +12,22 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
-/**
- * Manager central de lógica de clanes v2. Cache en memoria con
- * ConcurrentHashMap para thread-safety.
- */
 public class ClanManager {
 
 	private final Clans plugin;
 	private final StorageProvider storage;
 
-	// -------------------------------------------------------
-	// Caché en memoria
-	// -------------------------------------------------------
 	private final Map<String, Clan> clanById = new ConcurrentHashMap<>();
-	private final Map<String, String> nameIndex = new ConcurrentHashMap<>(); // nombre.lower → id
+	private final Map<String, String> nameIndex = new ConcurrentHashMap<>();
 	private final Map<UUID, ClanPlayer> playerCache = new ConcurrentHashMap<>();
 
 	private Pattern namePattern;
-
-	// -------------------------------------------------------
-	// Constructor
-	// -------------------------------------------------------
 
 	public ClanManager(Clans plugin, StorageProvider storage) {
 		this.plugin = plugin;
 		this.storage = storage;
 		this.namePattern = Pattern.compile(plugin.getConfigManager().getNameRegex());
 	}
-
-	// -------------------------------------------------------
-	// Carga inicial
-	// -------------------------------------------------------
 
 	public CompletableFuture<Void> loadAll() {
 		return storage.loadAllClans().thenCompose(clans -> {
@@ -51,7 +36,6 @@ public class ClanManager {
 				clanById.put(clan.getId(), clan);
 				nameIndex.put(clan.getName().toLowerCase(), clan.getId());
 
-				// Cargar aliados y miembros del clan
 				CompletableFuture<Void> allyFuture = storage.loadAllies(clan.getId())
 						.thenAccept(allies -> allies.forEach(clan::addAlly));
 				futures.add(allyFuture);
@@ -63,19 +47,13 @@ public class ClanManager {
 		});
 	}
 
-	// -------------------------------------------------------
-	// Gestión de jugadores
-	// -------------------------------------------------------
-
 	public CompletableFuture<ClanPlayer> loadPlayer(Player player) {
 		return storage.loadClanPlayer(player.getUniqueId()).thenApply(opt -> {
 			ClanPlayer cp = opt.orElseGet(
 					() -> new ClanPlayer(player.getUniqueId(), player.getName(), null, null, 0, 0, 0.0, 0, 0L));
 			cp.setName(player.getName());
 
-			// Re-vincular al modelo del clan si el clan está en caché
 			if (cp.hasClan() && !clanById.containsKey(cp.getClanId())) {
-				// El clan fue borrado mientras el jugador estaba offline
 				cp.leaveClan();
 			} else if (cp.hasClan()) {
 				Clan clan = clanById.get(cp.getClanId());
@@ -95,10 +73,6 @@ public class ClanManager {
 			storage.saveClanPlayer(cp);
 	}
 
-	// -------------------------------------------------------
-	// Lecturas síncronas (desde caché)
-	// -------------------------------------------------------
-
 	public ClanPlayer getPlayer(UUID uuid) {
 		return playerCache.get(uuid);
 	}
@@ -111,19 +85,13 @@ public class ClanManager {
 		return Collections.unmodifiableCollection(clanById.values());
 	}
 
-	/** Búsqueda case-insensitive por nombre de clan. */
 	public Clan getClanByName(String name) {
 		String id = nameIndex.get(name.toLowerCase());
 		return id != null ? clanById.get(id) : null;
 	}
 
-	/**
-	 * Búsqueda por nombre del líder (online o offline por nombre en caché de
-	 * jugadores).
-	 */
 	public Clan getClanByLeaderName(String leaderName) {
 		for (Clan clan : clanById.values()) {
-			// Buscar en playerCache primero (online)
 			ClanPlayer cp = playerCache.values().stream().filter(p -> p.getUuid().equals(clan.getLeaderUuid()))
 					.findFirst().orElse(null);
 			String name = cp != null ? cp.getName()
@@ -134,10 +102,6 @@ public class ClanManager {
 		return null;
 	}
 
-	/**
-	 * Busca clan por nombre de clan O por nombre de líder. Usado en /clan ally y
-	 * /clan info.
-	 */
 	public Clan findClanByNameOrLeader(String input) {
 		Clan byName = getClanByName(input);
 		return byName != null ? byName : getClanByLeaderName(input);
@@ -150,11 +114,6 @@ public class ClanManager {
 		return clanById.get(cp.getClanId());
 	}
 
-	// -------------------------------------------------------
-	// Validaciones
-	// -------------------------------------------------------
-
-	/** @return null si es válido, clave de mensaje si es inválido. */
 	public String validateName(String name) {
 		if (name.length() < plugin.getConfigManager().getNameMin())
 			return "clan.create.name-too-short";
@@ -171,9 +130,7 @@ public class ClanManager {
 		return null;
 	}
 
-	/** @return null si es válido, clave de mensaje si es inválido. */
 	public String validatePrefix(String prefix) {
-		// Medir longitud sin códigos de color
 		String stripped = prefix.replaceAll("&[0-9a-fA-FrRkKlLmMnNoO]", "");
 		if (stripped.length() < plugin.getConfigManager().getPrefixMin())
 			return "clan.prefix.too-short";
@@ -185,10 +142,6 @@ public class ClanManager {
 		}
 		return null;
 	}
-
-	// -------------------------------------------------------
-	// Operaciones de clan
-	// -------------------------------------------------------
 
 	public CompletableFuture<Clan> createClan(Player founder, String name, String prefix) {
 		String id = UUID.randomUUID().toString();
@@ -322,16 +275,6 @@ public class ClanManager {
 		return storage.removeAlliance(id1, id2);
 	}
 
-	// -------------------------------------------------------
-	// Sistema de puntos y nivel (llamado desde listeners)
-	// -------------------------------------------------------
-
-	/**
-	 * Procesa una kill: actualiza puntos, XP, nivel y killstreak del clan.
-	 * 
-	 * @param killerUuid UUID del jugador que hizo la kill.
-	 * @param victimUuid UUID del jugador que murió.
-	 */
 	public void processKill(UUID killerUuid, UUID victimUuid) {
 		ClanPlayer killer = playerCache.get(killerUuid);
 		ClanPlayer victim = playerCache.get(victimUuid);
@@ -340,7 +283,6 @@ public class ClanManager {
 		double deathPts = plugin.getConfigManager().getDeathPoints();
 		int xpPerKill = plugin.getConfigManager().getXpPerKill();
 
-		// --- Actualizar killer ---
 		if (killer != null) {
 			killer.registerKill();
 			killer.addPoints(killPts);
@@ -349,17 +291,13 @@ public class ClanManager {
 				Clan killerClan = clanById.get(killer.getClanId());
 				if (killerClan != null) {
 					killerClan.onMemberKill(killer.getName(), killer.getKillstreak(), killPts, xpPerKill);
-					// Comprobar subida de nivel
 					String formula = plugin.getConfigManager().getXpFormula();
 					int maxLevel = plugin.getConfigManager().getMaxLevel();
-					int slotsPerLvl = plugin.getConfigManager().getSlotsPerLevel();
+					int slotsForNewLevel = plugin.getConfigManager().getSlotsForLevel(killerClan.getLevel() + 1);
+					int maxSlots = plugin.getConfigManager().getMaxSlots();
 
-					if (killerClan.tryLevelUp(formula, maxLevel, slotsPerLvl)) {
-						// Notificar al clan del subida de nivel
+					if (killerClan.tryLevelUp(formula, maxLevel, slotsForNewLevel, maxSlots)) {
 						notifyClan(killerClan, "level.up", "{level}", String.valueOf(killerClan.getLevel()));
-						// Persistir (ya se guarda en el auto-save periódico,
-						// pero forzamos para el nivel)
-						storage.updateClan(killerClan);
 					} else {
 						storage.updateClan(killerClan);
 					}
@@ -368,7 +306,6 @@ public class ClanManager {
 			}
 		}
 
-		// --- Actualizar víctima ---
 		if (victim != null) {
 			victim.registerDeath();
 			victim.subtractPoints(deathPts);
@@ -383,10 +320,6 @@ public class ClanManager {
 			}
 		}
 	}
-
-	// -------------------------------------------------------
-	// Consultas de relación
-	// -------------------------------------------------------
 
 	public boolean areInSameClan(UUID a, UUID b) {
 		ClanPlayer ca = playerCache.get(a), cb = playerCache.get(b);
@@ -403,10 +336,6 @@ public class ClanManager {
 		return clanA != null && clanA.isAlliedWith(cb.getClanId());
 	}
 
-	// -------------------------------------------------------
-	// Top
-	// -------------------------------------------------------
-
 	public CompletableFuture<List<Clan>> getTopByPoints(int limit) {
 		return storage.getTopByPoints(limit);
 	}
@@ -419,11 +348,6 @@ public class ClanManager {
 		return storage.getTopByLevel(limit);
 	}
 
-	// -------------------------------------------------------
-	// Utilidades
-	// -------------------------------------------------------
-
-	/** Envía un mensaje a todos los miembros online de un clan. */
 	public void notifyClan(Clan clan, String msgPath, String... replacements) {
 		clan.getMembers().keySet().forEach(uuid -> {
 			Player p = plugin.getServer().getPlayer(uuid);
@@ -433,7 +357,6 @@ public class ClanManager {
 		});
 	}
 
-	/** Número de miembros online de un clan. */
 	public int getOnlineCount(Clan clan) {
 		int count = 0;
 		for (UUID uuid : clan.getMembers().keySet()) {
@@ -443,7 +366,6 @@ public class ClanManager {
 		return count;
 	}
 
-	/** Nombre del líder (desde caché o OfflinePlayer). */
 	public String getLeaderName(Clan clan) {
 		ClanPlayer cp = playerCache.get(clan.getLeaderUuid());
 		if (cp != null)

@@ -1,10 +1,9 @@
 # ============================================================
-#           gClans v2.0.0 — Configuración General
+#                gClans v2.0.0 — Configuración
 # ============================================================
 
-# --- Base de Datos ---
 database:
-  type: sqlite          # 'sqlite' o 'mysql'
+  type: sqlite
   sqlite:
     file-name: gclans.db
   mysql:
@@ -19,9 +18,7 @@ database:
     members: gclans_members
     allies:  gclans_allies
 
-# --- Configuración de Clanes ---
 clans:
-  # Nombre
   name-min-length: 3
   name-max-length: 8
   name-regex: '^[a-zA-Z0-9_]+$'
@@ -29,83 +26,73 @@ clans:
     - fuck
     - fvck
     - rape
-
-  # Prefijo
-  prefix-min-length: 2
-  prefix-max-length: 6
+  prefix-min-length: 3
+  prefix-max-length: 8
   prefix-regex: '^[a-zA-Z0-9\s]*$'
   prefix-blocked-codes:
     - '&k'
-  require-prefix-on-creation: false   # Si false, el prefix = nombre truncado
-
-  # Color por defecto al crear el clan (código sin &)
+  require-prefix-on-creation: false
   default-color: 'e'
-
-  # Slots iniciales al crear el clan
   default-slots: 8
+  # Límite máximo de slots que puede tener un clan (0 = sin límite)
+  max-slots: 12
+  max-allies: 1
 
-  # Alianzas
-  max-allies: 4
-
-# --- Sistema de Puntos ---
 points:
-  # Puntos que gana el CLAN cuando un miembro hace una kill
   kill-points: 1.0
-  # Puntos que pierde el CLAN cuando un miembro muere (puede resultar en negativo)
   death-points: 0.5
 
 # --- Sistema de Niveles & Experiencia ---
 levels:
-  # XP que otorga cada kill al clan (solo kills, no muertes)
   xp-per-kill: 1
-  # Fórmula de XP necesaria para subir de nivel.
-  # Usa %level% como placeholder del nivel ACTUAL.
-  # Ejemplo: '%level% * 10' → nivel 1 necesita 10 xp, nivel 2 necesita 20, etc.
+  # Fórmula de XP para subir de nivel. %level% = nivel actual.
   xp-formula: '%level% * 10'
-  # Nivel máximo alcanzable
   max-level: 50
-  # Slots extra que se añaden al clan por cada nivel ganado
-  slots-per-level: 1
 
-# --- Cooldown Anti-Recreación ---
+  # Tabla de slots por nivel.
+  # Cada entrada es "nivel: slots_a_agregar"
+  # El clan recibe +X slots cuando ALCANZA ese nivel exacto.
+  # Ejemplo: al llegar al nivel 5 recibe +1 slot, al nivel 10 +2 slots, etc.
+  slots-per-level:
+    5:  1
+    10: 2
+    15: 1
+    20: 2
+    25: 1
+    30: 2
+    35: 1
+    40: 2
+    45: 1
+    50: 3
+
 cooldowns:
-  # Segundos que debe esperar un jugador para crear un clan después de
-  # disolver o salir de uno. (86400 = 24h, 0 = deshabilitado)
-  clan-create: 86400
+  clan-create: 60
 
-# --- Confirmación ---
 confirmation:
   timeout-seconds: 10
 
-# --- Invitaciones ---
 invitations:
   timeout-seconds: 60
 
-# --- Chat ---
 chat:
-  clan-format:  '&8[&6ClanChat&8] &7{player}&8: &f{message}'
-  ally-format:  '&8[&bAllyChat&8] &7({clan}) &f{player}&8: &f{message}'
-  spy-format:   '&8[&cSpyChat&8] &7({clan}) &e{player}&8: &f{message}'
+  clan-format: '&a[Clan] {player}&7: &e{message}'
+  ally-format: '&9[Ally] &7({clan}) &9{player}&7: &e{message}'
+  spy-format: '&d[SpyChat] &7({clan}) &d{player}&7: &e{message}'
   spy-enabled: true
 
-# --- Combate ---
 combat:
-  # Proteger miembros del mismo clan (NO tiene bypass, ni siquiera OPs)
   protect-members: true
-  # Proteger aliados (siempre activo, independiente del /clan pvp toggle)
   protect-allies: true
 
-# --- Comando /clan top ---
 top:
   display-count: 10
 
-# --- Comando /clan list ---
 list:
   clans-per-page: 10
 
-# --- PlaceholderAPI ---
 placeholders:
-  # Texto mostrado cuando el jugador no tiene clan
-  no-clan-text: 'Sin clan'
-  # Texto de kills/estadísticas cuando no tiene clan
+  no-clan-text: 'Sin Clan'
   no-clan-zero: '0'
+  no-prefix-text: 'Sin Prefix'
+  name-color: 'e'
+  prefix-color: '7'

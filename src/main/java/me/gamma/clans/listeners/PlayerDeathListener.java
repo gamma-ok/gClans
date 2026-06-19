@@ -7,10 +7,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
-/**
- * Detecta muertes de jugadores causadas por otro jugador. Delega al ClanManager
- * para actualizar puntos, XP, nivel y killstreak.
- */
 public class PlayerDeathListener implements Listener {
 
 	private final Clans plugin;
@@ -22,12 +18,11 @@ public class PlayerDeathListener implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		Player victim = event.getEntity();
-		Player killer = victim.getKiller(); // null si murió por otra causa
+		Player killer = victim.getKiller();
 
 		if (killer == null || killer.equals(victim))
 			return;
 
-		// Delegar toda la lógica de puntos/XP/nivel al ClanManager
 		plugin.getClanManager().processKill(killer.getUniqueId(), victim.getUniqueId());
 	}
 }
