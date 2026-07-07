@@ -14,7 +14,7 @@ public class RenameCommand extends AbstractClanCommand {
 
 	@Override
 	protected void execute(Player player, ClanPlayer cp, String[] args) {
-		if (!requireArgs(player, args, 1))
+		if (!requireArgs(player, args, 1, "rename"))
 			return;
 		String error = cm.validateName(args[0]);
 		if (error != null) {

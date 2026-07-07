@@ -6,30 +6,23 @@ import java.util.*;
 public class Clan {
 
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
-
 	private final String id;
 	private final long createdAt;
-
 	private String name;
 	private String prefix;
 	private String color;
 	private UUID leaderUuid;
-
 	private final Map<UUID, Rank> members = new LinkedHashMap<>();
 	private final Set<String> allies = new HashSet<>();
 	private final Set<String> pendingAllyRequests = new HashSet<>();
-
 	private int totalKills;
 	private int totalDeaths;
 	private double totalPoints;
-
 	private int level;
 	private int xp;
 	private int slots;
-
 	private int bestKillstreak;
 	private String bestKillstreakPlayer;
-
 	private boolean pvpEnabled;
 
 	public Clan(String id, String name, String prefix, String color, UUID founderUuid, int defaultSlots) {
@@ -267,6 +260,10 @@ public class Clan {
 
 	public int getTotalDeaths() {
 		return totalDeaths;
+	}
+
+	public void setTotalDeaths(int v) {
+		this.totalDeaths = v;
 	}
 
 	public double getTotalPoints() {

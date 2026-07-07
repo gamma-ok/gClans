@@ -16,7 +16,7 @@ general:
   clan-not-found: '&cEl clan {clan} no existe.'
   already-in-clan: '&cYa perteneces a un clan. Debes salir primero.'
   target-already-in-clan: '&cEl jugador {target} ya pertenece a un clan.'
-
+  
 cooldown:
   create: '&cDebes esperar {time} para poder crear un nuevo clan.'
 
@@ -147,14 +147,14 @@ level:
 info:
   lines:
     - '&7&m-------------------------------------------------'
-    - '&6{clan} &7[{online}/{total}] &f- &eCreado: &f{date}'
-    - '&eLíder: &a{leader}'
-    - '&eCo-Líder: &a{coleaders}'
-    - '&eCapitán: &a{captains}'
-    - '&eMiembros: &a{members}'
-    - '&ePrefix: {prefix}'
-    - '&ePoints: &f{points}'
-    - '&ePosition: &f#{pos}'
+    - '&6{clan} &7[{online}/{total}&7] &8- &6Creado: &f{date}'
+    - '&eLíder: {leader}'
+    - '{?coleaders}&eCo-Líder: {coleaders}'
+    - '{?captains}&eCapitán: {captains}'
+    - '{?members}&eMiembros: {members}'
+    - '{?prefix}&ePrefix: {prefix}'
+    - '&ePuntos: &f{points}'
+    - '&ePosición: &f#{pos}'
     - '&eClan PvP: {pvp}'
     - '&7&m-------------------------------------------------'
   no-coleaders: '&7(Ninguno)'
@@ -163,42 +163,55 @@ info:
   no-prefix: '&7Sin Prefix'
   pvp-on: '&aON'
   pvp-off: '&cOFF'
+  
+  tooltip:
+    # {name}, {clan}, {kills}, {deaths}, {kdr}, {streak}, {best_streak}
+    - '&eAsesinatos: &f{kills}'
+    - '&eMuertes: &f{deaths}'
+    - '&eKDR: &f{kdr}'
+    - '&eRacha: &f{streak}'
+    - '&eRacha Máxima: &f{best_streak}'
 
 stats:
   lines:
     - '&7&m-------------------------------------------------'
-    - "&6{clan}&f's Statistics&8:"
-    - '&7Kills&8: &f{kills}'
-    - '&7Deaths&8: &f{deaths}'
-    - '&7K/D&8: &f{kd}'
-    - '&7Points&8: &f{points}'
-    - '&7Level&8: &f{level}'
-    - '&7Best Killstreak&8: &f{ks_value} &8(&e{ks_player}&8)'
+    - "&6&lEstadísticas del Clan: &e{clan}"
+    - '&eAsesinatos: &f{kills}'
+    - '&eMuertes: &f{deaths}'
+    - '&eKDR: &f{kd}'
+    - '&ePuntos: &f{points}'
+    - '&eNivel: &f{level}'
+    - '&eRacha Máxima: &f{ks_value} &8(&e{ks_player}&8)'
     - '&7&m-------------------------------------------------'
 
 top:
   lines-points:
-    - '&8&m----&r &6Top &e{count} &6Clanes &7(Points) &8&m----'
+    - '&7&m-------------------------------------------------'
+    - '&6&lTop {count} Puntos de Clanes'
     - '{entries}'
-    - '&8&m-------------------------------'
+    - '&7&m-------------------------------------------------'
   lines-kills:
-    - '&8&m----&r &6Top &e{count} &6Clanes &7(Kills) &8&m----'
+    - '&7&m-------------------------------------------------'
+    - '&6&lTop {count} Asesinatos de Clanes'
     - '{entries}'
-    - '&8&m-------------------------------'
+    - '&7&m-------------------------------------------------'
   lines-level:
-    - '&8&m----&r &6Top &e{count} &6Clanes &7(Level) &8&m----'
+    - '&7&m-------------------------------------------------'
+    - '&6&lTop {count} Niveles de Clanes'
     - '{entries}'
-    - '&8&m-------------------------------'
-  entry-points: ' &e#{pos} &f{clan} &8- &7{value} pts &8| &7Lv.{level}'
-  entry-kills: ' &e#{pos} &f{clan} &8- &7{value} kills &8| &7Lv.{level}'
-  entry-level: ' &e#{pos} &f{clan} &8- &7Lv.{value} &8| &7{kills} kills'
+    - '&7&m-------------------------------------------------'
+  entry-points: '&e#{pos} &f{clan} &7- &e{value}'
+  entry-kills: '&e#{pos} &f{clan} &7- &e{value}'
+  entry-level: '&e#{pos} &f{clan} &7- &e{value}'
 
 list:
   lines:
-    - '&eClan List &8(Page &f{page}&8/&f{max}&8)'
+    - '&7&m-------------------------------------------------'
+    - '&6&lLista de Clanes &7(Página {page}/{max})'
     - '{entries}'
-    - '&7To view other pages, use &e/clan list {next}&7.'
-  entry: '&f{pos}. &e{clan} &8[&a{online}&8/&f{total} &7online&8]'
+    - '&6Usa &f/clan list {next} &6para más páginas.'
+    - '&7&m-------------------------------------------------'
+  entry: '&e#{pos} &f{clan} &a({online}/{total})'
   empty: '&cNo hay clanes registrados aún.'
 
 admin:
@@ -270,14 +283,25 @@ admin:
     invalid: '&cCantidad inválida. Debe ser un número entero.'
 
   level:
+    added: '&a[Admin] Se añadieron &e{amount} &aniveles al clan &e{clan}&a. Nivel actual: &e{total}&a.'
+    removed: '&a[Admin] Se quitaron &e{amount} &aniveles al clan &e{clan}&a. Nivel actual: &e{total}&a.'
     set: '&a[Admin] El nivel del clan &e{clan} &afue establecido a &e{amount}&a.'
     not-found: '&cNo se encontró el clan &e{clan}&c.'
     invalid: '&cNivel inválido. Debe ser un número entre 1 y {max}.'
     max: '&cEl nivel máximo es &e{max}&c.'
+    min: '&cEl nivel mínimo es 1.'
 
   xp:
     added: '&a[Admin] Se añadieron &e{amount} &aXP al clan &e{clan}&a. Total: &e{total}&a.'
+    removed: '&a[Admin] Se quitaron &e{amount} &aXP al clan &e{clan}&a. Total: &e{total}&a.'
     set: '&a[Admin] La XP del clan &e{clan} &afue establecida a &e{amount}&a.'
+    not-found: '&cNo se encontró el clan &e{clan}&c.'
+    invalid: '&cCantidad inválida. Debe ser un número entero.'
+
+  deaths:
+    added: '&a[Admin] Se añadieron &e{amount} &amuertes al clan &e{clan}&a. Total: &e{total}&a.'
+    removed: '&a[Admin] Se quitaron &e{amount} &amuertes al clan &e{clan}&a. Total: &e{total}&a.'
+    set: '&a[Admin] Las muertes del clan &e{clan} &afueron establecidas a &e{amount}&a.'
     not-found: '&cNo se encontró el clan &e{clan}&c.'
     invalid: '&cCantidad inválida. Debe ser un número entero.'
 
@@ -286,9 +310,17 @@ admin:
     not-found: '&cNo se encontró el clan &e{clan}&c.'
 
   slots:
+    added: '&a[Admin] Se añadieron &e{amount} &aslots al clan &e{clan}&a. Total: &e{total}&a.'
+    removed: '&a[Admin] Se quitaron &e{amount} &aslots al clan &e{clan}&a. Total: &e{total}&a.'
     set: '&a[Admin] Los slots del clan &e{clan} &afueron establecidos a &e{amount}&a.'
     not-found: '&cNo se encontró el clan &e{clan}&c.'
     invalid: '&cCantidad inválida. Debe ser un número entero mayor a 0.'
+    min: '&cEl mínimo de slots es 1.'
+
+  pvp:
+    enabled: '&a[Admin] El PvP del clan &e{clan} &afue &a&lACTIVADO&a.'
+    disabled: '&a[Admin] El PvP del clan &e{clan} &afue &c&lDESACTIVADO&a.'
+    not-found: '&cNo se encontró el clan &e{clan}&c.'
 
   ally:
     added: '&a[Admin] Se formó alianza entre &e{clan1} &ay &e{clan2}&a.'
@@ -302,3 +334,25 @@ admin:
   reload:
     success: '&a[Admin] Configuración recargada correctamente.'
     error: '&c[Admin] Error al recargar la configuración. Revisa la consola.'
+
+usage:
+  create: '&cUso: &e/clan create <nombre> [prefix]'
+  accept: '&cUso: &e/clan accept <clan/jugador>'
+  invite: '&cUso: &e/clan invite <jugador>'
+  uninvite: '&cUso: &e/clan uninvite <jugador>'
+  kick: '&cUso: &e/clan kick <jugador>'
+  promote: '&cUso: &e/clan promote <jugador>'
+  demote: '&cUso: &e/clan demote <jugador>'
+  setleader: '&cUso: &e/clan setleader <jugador>'
+  rename: '&cUso: &e/clan rename <nuevo-nombre>'
+  prefix: '&cUso: &e/clan prefix <nuevo-prefix>'
+  disband: '&cUso: &e/clan disband'
+  leave: '&cUso: &e/clan leave'
+  info: '&cUso: &e/clan info [clan/jugador]'
+  stats: '&cUso: &e/clan stats [clan]'
+  top: '&cUso: &e/clan top [points/kills/level]'
+  list: '&cUso: &e/clan list [pagina]'
+  ally: '&cUso: &e/clan ally <clan>'
+  breakally: '&cUso: &e/clan breakally <clan>'
+  pvp: '&cUso: &e/clan pvp'
+  chat: '&cUso: &e/clan chat [clan/ally]'

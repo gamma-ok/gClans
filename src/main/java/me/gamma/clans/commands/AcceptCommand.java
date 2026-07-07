@@ -15,7 +15,7 @@ public class AcceptCommand extends AbstractClanCommand {
 
 	@Override
 	protected void execute(Player player, ClanPlayer cp, String[] args) {
-		if (!requireArgs(player, args, 1))
+		if (!requireArgs(player, args, 1, "accept"))
 			return;
 
 		if (cp.hasClan()) {

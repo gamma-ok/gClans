@@ -16,7 +16,6 @@ public abstract class AbstractClanCommand {
 	protected final ConfigManager cfg;
 	protected final ClanManager cm;
 	protected final RankManager rankManager;
-
 	private final String name;
 	private final String permission;
 	private final RankPermission requiredRankPerm;
@@ -104,6 +103,14 @@ public abstract class AbstractClanCommand {
 	protected boolean requireArgs(Player p, String[] args, int min) {
 		if (args.length < min) {
 			msg(p, "general.invalid-usage");
+			return false;
+		}
+		return true;
+	}
+
+	protected boolean requireArgs(Player p, String[] args, int min, String usagePath) {
+		if (args.length < min) {
+			msg(p, "usage." + usagePath);
 			return false;
 		}
 		return true;

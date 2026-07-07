@@ -16,11 +16,9 @@ public class ClanManager {
 
 	private final Clans plugin;
 	private final StorageProvider storage;
-
 	private final Map<String, Clan> clanById = new ConcurrentHashMap<>();
 	private final Map<String, String> nameIndex = new ConcurrentHashMap<>();
 	private final Map<UUID, ClanPlayer> playerCache = new ConcurrentHashMap<>();
-
 	private Pattern namePattern;
 
 	public ClanManager(Clans plugin, StorageProvider storage) {
@@ -153,8 +151,14 @@ public class ClanManager {
 		nameIndex.put(name.toLowerCase(), id);
 
 		ClanPlayer cp = playerCache.get(founder.getUniqueId());
-		if (cp != null)
+		if (cp != null) {
 			cp.joinClan(id, Rank.LEADER);
+			// Establecer cooldown de creación solo al fundador
+			long cooldownSeconds = plugin.getConfigManager().getCreateCooldown();
+			if (cooldownSeconds > 0) {
+				cp.setCreateCooldownUntil(System.currentTimeMillis() + cooldownSeconds * 1000L);
+			}
+		}
 
 		return storage.saveClan(clan).thenCompose(v -> storage.saveClanPlayer(cp)).thenApply(v -> clan);
 	}
@@ -166,15 +170,21 @@ public class ClanManager {
 
 		nameIndex.remove(clan.getName().toLowerCase());
 
+		// Aplicar cooldown solo al líder que disuelve el clan
 		long cooldownSeconds = plugin.getConfigManager().getCreateCooldown();
 		long cooldownUntil = System.currentTimeMillis() + cooldownSeconds * 1000L;
 
+		UUID leaderUuid = clan.getLeaderUuid();
+		ClanPlayer leaderCp = playerCache.get(leaderUuid);
+		if (leaderCp != null && cooldownSeconds > 0) {
+			leaderCp.setCreateCooldownUntil(cooldownUntil);
+		}
+
+		// Los demás miembros NO reciben cooldown
 		for (UUID memberUuid : clan.getMembers().keySet()) {
 			ClanPlayer cp = playerCache.get(memberUuid);
 			if (cp != null) {
 				cp.leaveClan();
-				if (cooldownSeconds > 0)
-					cp.setCreateCooldownUntil(cooldownUntil);
 			}
 		}
 
@@ -201,11 +211,7 @@ public class ClanManager {
 		if (clan != null)
 			clan.removeMember(playerUuid);
 
-		long cooldownSeconds = plugin.getConfigManager().getCreateCooldown();
-		if (cooldownSeconds > 0) {
-			cp.setCreateCooldownUntil(System.currentTimeMillis() + cooldownSeconds * 1000L);
-		}
-
+		// Los miembros que salen o son kickeados NO reciben cooldown
 		cp.leaveClan();
 		return storage.removeMember(playerUuid).thenCompose(v -> storage.saveClanPlayer(cp));
 	}

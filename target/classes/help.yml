@@ -44,7 +44,7 @@ pages:
     - '  &e/clan kick <player> &7- &fExpulsar a un miembro del clan.'
     - '  &e/clan ally <clan/leader> &7- &fEnviar o aceptar una solicitud de alianza.'
     - '  &e/clan breakally <clan/leader> &7- &fRomper una alianza.'
-    - '  &e/clan pvp <on/off> &7- &fActivar/Desactivar el PvP entre miembros del clan.'
+    - '  &e/clan pvp &7- &fActivar/Desactivar el PvP entre miembros del clan.'
     - ' '
     - '&6Usa &f/clan admin help {next} &6para más comandos.'
     - '&7&m-------------------------------------------------'

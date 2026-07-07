@@ -60,12 +60,14 @@ public class SQLiteProvider implements StorageProvider {
 					+ "  total_kills           INTEGER DEFAULT 0," + "  total_deaths          INTEGER DEFAULT 0,"
 					+ "  total_points          REAL    DEFAULT 0.0," + "  best_killstreak       INTEGER DEFAULT 0,"
 					+ "  best_killstreak_player TEXT DEFAULT ''," + "  pvp_enabled           INTEGER DEFAULT 0" + ");");
+
 			s.executeUpdate("CREATE TABLE IF NOT EXISTS " + TM + " (" + "  uuid                  TEXT PRIMARY KEY,"
 					+ "  name                  TEXT NOT NULL," + "  clan_id               TEXT,"
 					+ "  rank                  TEXT," + "  kills                 INTEGER DEFAULT 0,"
 					+ "  deaths                INTEGER DEFAULT 0," + "  points                REAL    DEFAULT 0.0,"
-					+ "  best_killstreak       INTEGER DEFAULT 0," + "  create_cooldown_until INTEGER DEFAULT 0"
-					+ ");");
+					+ "  best_killstreak       INTEGER DEFAULT 0," + "  create_cooldown_until INTEGER DEFAULT 0,"
+					+ "  clan_kills            INTEGER DEFAULT 0" + ");");
+
 			s.executeUpdate("CREATE TABLE IF NOT EXISTS " + TA + " (" + "  clan_id_1 TEXT NOT NULL,"
 					+ "  clan_id_2 TEXT NOT NULL," + "  PRIMARY KEY (clan_id_1, clan_id_2)" + ");");
 		}
@@ -138,7 +140,7 @@ public class SQLiteProvider implements StorageProvider {
 	public CompletableFuture<Void> deleteClan(String id) {
 		return run(() -> {
 			try (PreparedStatement ps = connection
-					.prepareStatement("UPDATE " + TM + " SET clan_id=NULL, rank=NULL WHERE clan_id=?")) {
+					.prepareStatement("UPDATE " + TM + " SET clan_id=NULL, rank=NULL, clan_kills=0 WHERE clan_id=?")) {
 				ps.setString(1, id);
 				ps.executeUpdate();
 			}
@@ -194,8 +196,8 @@ public class SQLiteProvider implements StorageProvider {
 	public CompletableFuture<Void> saveClanPlayer(ClanPlayer cp) {
 		return run(() -> {
 			String sql = "INSERT OR REPLACE INTO " + TM
-					+ " (uuid,name,clan_id,rank,kills,deaths,points,best_killstreak,create_cooldown_until)"
-					+ " VALUES (?,?,?,?,?,?,?,?,?)";
+					+ " (uuid,name,clan_id,rank,kills,deaths,points,best_killstreak,create_cooldown_until,clan_kills)"
+					+ " VALUES (?,?,?,?,?,?,?,?,?,?)";
 			try (PreparedStatement ps = connection.prepareStatement(sql)) {
 				ps.setString(1, cp.getUuid().toString());
 				ps.setString(2, cp.getName());
@@ -206,6 +208,7 @@ public class SQLiteProvider implements StorageProvider {
 				ps.setDouble(7, cp.getPoints());
 				ps.setInt(8, cp.getBestKillstreak());
 				ps.setLong(9, cp.getCreateCooldownUntil());
+				ps.setInt(10, cp.getClanKills());
 				ps.executeUpdate();
 			}
 		});
@@ -239,7 +242,7 @@ public class SQLiteProvider implements StorageProvider {
 	public CompletableFuture<Void> removeMember(UUID uuid) {
 		return run(() -> {
 			try (PreparedStatement ps = connection
-					.prepareStatement("UPDATE " + TM + " SET clan_id=NULL, rank=NULL WHERE uuid=?")) {
+					.prepareStatement("UPDATE " + TM + " SET clan_id=NULL, rank=NULL, clan_kills=0 WHERE uuid=?")) {
 				ps.setString(1, uuid.toString());
 				ps.executeUpdate();
 			}
@@ -331,7 +334,8 @@ public class SQLiteProvider implements StorageProvider {
 		String clanId = rs.getString("clan_id");
 		return new ClanPlayer(UUID.fromString(rs.getString("uuid")), rs.getString("name"), clanId,
 				rankStr != null ? Rank.fromString(rankStr) : null, rs.getInt("kills"), rs.getInt("deaths"),
-				rs.getDouble("points"), rs.getInt("best_killstreak"), rs.getLong("create_cooldown_until"));
+				rs.getDouble("points"), rs.getInt("best_killstreak"), rs.getLong("create_cooldown_until"),
+				rs.getInt("clan_kills"));
 	}
 
 	private CompletableFuture<Void> run(SqlRunnable r) {

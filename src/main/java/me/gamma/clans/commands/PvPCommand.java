@@ -14,28 +14,19 @@ public class PvPCommand extends AbstractClanCommand {
 
 	@Override
 	protected void execute(Player player, ClanPlayer cp, String[] args) {
-		if (!requireArgs(player, args, 1))
-			return;
-
-		String arg = args[0].toLowerCase();
-		if (!arg.equals("on") && !arg.equals("off")) {
-			msg(player, "general.invalid-usage");
-			return;
-		}
-
 		Clan clan = cm.getClan(cp.getClanId());
 		if (clan == null)
 			return;
 
-		boolean enable = arg.equals("on");
-		clan.setPvpEnabled(enable);
+		boolean newState = !clan.isPvpEnabled();
+		clan.setPvpEnabled(newState);
 
 		plugin.getStorageProvider().updateClan(clan).exceptionally(ex -> {
 			plugin.getLogger().severe(ex.getMessage());
 			return null;
 		});
 
-		String msgKey = enable ? "pvp.enabled" : "pvp.disabled";
+		String msgKey = newState ? "pvp.enabled" : "pvp.disabled";
 		cm.notifyClan(clan, msgKey);
 	}
 }

@@ -2,18 +2,7 @@ package me.gamma.clans.models;
 
 public enum RankPermission {
 
-    CHAT,
-    INVITE,
-    KICK,
-    ALLY,
-    BREAKALLY,
-    PVP,
-    PROMOTE,
-    RENAME,
-    PREFIX,
-    DISBAND,
-    SETLEADER,
-    ALL;
+	CHAT, INVITE, KICK, ALLY, BREAKALLY, PVP, PROMOTE, RENAME, PREFIX, DISBAND, SETLEADER, ALL;
 
 	public static RankPermission fromString(String s) {
 		if (s == null)

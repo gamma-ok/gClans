@@ -28,11 +28,11 @@ clans:
     - rape
   prefix-min-length: 3
   prefix-max-length: 8
-  prefix-regex: '^[a-zA-Z0-9\s]*$'
+  prefix-regex: '^[a-zA-Z0-9]+$'
   prefix-blocked-codes:
     - '&k'
   require-prefix-on-creation: false
-  default-color: 'e'
+  default-color: 'c'
   default-slots: 8
   # Límite máximo de slots que puede tener un clan (0 = sin límite)
   max-slots: 12
@@ -42,7 +42,6 @@ points:
   kill-points: 1.0
   death-points: 0.5
 
-# --- Sistema de Niveles & Experiencia ---
 levels:
   xp-per-kill: 1
   # Fórmula de XP para subir de nivel. %level% = nivel actual.
@@ -94,5 +93,12 @@ placeholders:
   no-clan-text: 'Sin Clan'
   no-clan-zero: '0'
   no-prefix-text: 'Sin Prefix'
-  name-color: 'e'
-  prefix-color: '7'
+  name-color: '6'
+  prefix-color: 'e'
+
+member-list:
+  tooltip-enabled: true
+  online-color: 'a'
+  offline-color: '7'
+  show-clan-kills: true
+  kills-format: '&e[&a{kills}&e]'

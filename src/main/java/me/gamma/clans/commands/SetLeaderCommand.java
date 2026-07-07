@@ -15,7 +15,7 @@ public class SetLeaderCommand extends AbstractClanCommand {
 
 	@Override
 	protected void execute(Player player, ClanPlayer cp, String[] args) {
-		if (!requireArgs(player, args, 1))
+		if (!requireArgs(player, args, 1, "setleader"))
 			return;
 
 		boolean isConfirm = args.length >= 2 && "confirm".equalsIgnoreCase(args[1]);

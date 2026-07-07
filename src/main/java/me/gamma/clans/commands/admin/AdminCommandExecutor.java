@@ -21,7 +21,6 @@ public class AdminCommandExecutor implements CommandExecutor, TabCompleter {
 	private final ConfigManager cfg;
 	private final ClanManager cm;
 	private final AdminHelpCommand helpCmd;
-
 	private final Map<UUID, PendingAdminAction> pendingActions = new HashMap<>();
 
 	private static class PendingAdminAction {
@@ -104,6 +103,9 @@ public class AdminCommandExecutor implements CommandExecutor, TabCompleter {
 		case "kills":
 			handleStat(player, args, "kills");
 			break;
+		case "deaths":
+			handleStat(player, args, "deaths");
+			break;
 		case "level":
 			handleStat(player, args, "level");
 			break;
@@ -118,6 +120,9 @@ public class AdminCommandExecutor implements CommandExecutor, TabCompleter {
 			break;
 		case "ally":
 			handleAlly(player, args);
+			break;
+		case "pvp":
+			handleAdminPvP(player, args);
 			break;
 		case "reload":
 			handleReload(player);
@@ -498,6 +503,9 @@ public class AdminCommandExecutor implements CommandExecutor, TabCompleter {
 		case "kills":
 			handleKills(player, clan, action, args);
 			break;
+		case "deaths":
+			handleDeaths(player, clan, action, args);
+			break;
 		case "level":
 			handleLevel(player, clan, action, args);
 			break;
@@ -578,39 +586,92 @@ public class AdminCommandExecutor implements CommandExecutor, TabCompleter {
 		}
 	}
 
-	private void handleLevel(Player player, Clan clan, String action, String[] args) {
+	private void handleDeaths(Player player, Clan clan, String action, String[] args) {
 		switch (action) {
+		case "add":
+		case "remove":
 		case "set":
 			if (args.length < 4) {
-				usage(player, "/clan admin level set <clan> <nivel>");
+				usage(player, "/clan admin deaths " + action + " <clan> <cantidad>");
+				return;
+			}
+			int amount;
+			try {
+				amount = Integer.parseInt(args[3]);
+			} catch (NumberFormatException e) {
+				player.sendMessage(cfg.getMessage("admin.deaths.invalid"));
+				return;
+			}
+
+			int current = clan.getTotalDeaths();
+			if (action.equals("add"))
+				clan.setTotalDeaths(current + amount);
+			else if (action.equals("remove"))
+				clan.setTotalDeaths(Math.max(0, current - amount));
+			else
+				clan.setTotalDeaths(Math.max(0, amount));
+
+			persist(clan);
+			String msgKey = action.equals("add") ? "admin.deaths.added"
+					: action.equals("remove") ? "admin.deaths.removed" : "admin.deaths.set";
+			player.sendMessage(cfg.getMessage(msgKey, "{clan}", clan.getName(), "{amount}", String.valueOf(amount),
+					"{total}", String.valueOf(clan.getTotalDeaths())));
+			break;
+		default:
+			usage(player, "/clan admin deaths add|remove|set <clan> <cantidad>");
+		}
+	}
+
+	private void handleLevel(Player player, Clan clan, String action, String[] args) {
+		switch (action) {
+		case "add":
+		case "remove":
+		case "set":
+			if (args.length < 4) {
+				usage(player, "/clan admin level " + action + " <clan> <cantidad>");
 				return;
 			}
 			int maxLevel = cfg.getMaxLevel();
-			int level;
+			int amount;
 			try {
-				level = Integer.parseInt(args[3]);
+				amount = Integer.parseInt(args[3]);
 			} catch (NumberFormatException e) {
 				player.sendMessage(cfg.getMessage("admin.level.invalid", "{max}", String.valueOf(maxLevel)));
 				return;
 			}
 
-			if (level < 1 || level > maxLevel) {
-				player.sendMessage(cfg.getMessage("admin.level.invalid", "{max}", String.valueOf(maxLevel)));
-				return;
+			int current = clan.getLevel();
+			int newLevel;
+
+			if (action.equals("add")) {
+				newLevel = Math.min(current + amount, maxLevel);
+			} else if (action.equals("remove")) {
+				newLevel = Math.max(1, current - amount);
+			} else {
+				if (amount < 1 || amount > maxLevel) {
+					player.sendMessage(cfg.getMessage("admin.level.invalid", "{max}", String.valueOf(maxLevel)));
+					return;
+				}
+				newLevel = amount;
 			}
-			clan.setLevel(level);
+
+			clan.setLevel(newLevel);
 			persist(clan);
-			player.sendMessage(
-					cfg.getMessage("admin.level.set", "{clan}", clan.getName(), "{amount}", String.valueOf(level)));
+
+			String msgKey = action.equals("add") ? "admin.level.added"
+					: action.equals("remove") ? "admin.level.removed" : "admin.level.set";
+			player.sendMessage(cfg.getMessage(msgKey, "{clan}", clan.getName(), "{amount}", String.valueOf(amount),
+					"{total}", String.valueOf(newLevel)));
 			break;
 		default:
-			usage(player, "/clan admin level set <clan> <nivel>");
+			usage(player, "/clan admin level add|remove|set <clan> <cantidad>");
 		}
 	}
 
 	private void handleXp(Player player, Clan clan, String action, String[] args) {
 		switch (action) {
 		case "add":
+		case "remove":
 		case "set":
 			if (args.length < 4) {
 				usage(player, "/clan admin xp " + action + " <clan> <cantidad>");
@@ -626,16 +687,19 @@ public class AdminCommandExecutor implements CommandExecutor, TabCompleter {
 
 			if (action.equals("add"))
 				clan.setXp(clan.getXp() + amount);
+			else if (action.equals("remove"))
+				clan.setXp(Math.max(0, clan.getXp() - amount));
 			else
 				clan.setXp(Math.max(0, amount));
 
 			persist(clan);
-			String msgKey = action.equals("add") ? "admin.xp.added" : "admin.xp.set";
+			String msgKey = action.equals("add") ? "admin.xp.added"
+					: action.equals("remove") ? "admin.xp.removed" : "admin.xp.set";
 			player.sendMessage(cfg.getMessage(msgKey, "{clan}", clan.getName(), "{amount}", String.valueOf(amount),
 					"{total}", String.valueOf(clan.getXp())));
 			break;
 		default:
-			usage(player, "/clan admin xp add|set <clan> <cantidad>");
+			usage(player, "/clan admin xp add|remove|set <clan> <cantidad>");
 		}
 	}
 
@@ -654,6 +718,7 @@ public class AdminCommandExecutor implements CommandExecutor, TabCompleter {
 
 		clan.setTotalPoints(0);
 		clan.setTotalKillsAdmin(0);
+		clan.setTotalDeaths(0);
 		clan.setLevel(1);
 		clan.setXp(0);
 
@@ -662,12 +727,14 @@ public class AdminCommandExecutor implements CommandExecutor, TabCompleter {
 	}
 
 	private void handleSlots(Player player, String[] args) {
-		if (args.length < 4 || !args[1].equalsIgnoreCase("set")) {
-			usage(player, "/clan admin slots set <clan> <cantidad>");
+		if (args.length < 4) {
+			usage(player, "/clan admin slots add|remove|set <clan> <cantidad>");
 			return;
 		}
 
+		String action = args[1].toLowerCase();
 		String clanName = args[2];
+
 		Clan clan = cm.getClanByName(clanName);
 		if (clan == null) {
 			player.sendMessage(cfg.getMessage("admin.slots.not-found", "{clan}", clanName));
@@ -687,9 +754,54 @@ public class AdminCommandExecutor implements CommandExecutor, TabCompleter {
 			return;
 		}
 
-		clan.setSlots(amount);
+		int current = clan.getSlots();
+		int newSlots;
+		String msgKey;
+
+		switch (action) {
+		case "add":
+			newSlots = current + amount;
+			msgKey = "admin.slots.added";
+			break;
+		case "remove":
+			newSlots = Math.max(1, current - amount);
+			msgKey = "admin.slots.removed";
+			break;
+		case "set":
+			newSlots = amount;
+			msgKey = "admin.slots.set";
+			break;
+		default:
+			usage(player, "/clan admin slots add|remove|set <clan> <cantidad>");
+			return;
+		}
+
+		clan.setSlots(newSlots);
 		persist(clan);
-		player.sendMessage(cfg.getMessage("admin.slots.set", "{clan}", clanName, "{amount}", String.valueOf(amount)));
+		player.sendMessage(cfg.getMessage(msgKey, "{clan}", clanName, "{amount}", String.valueOf(amount), "{total}",
+				String.valueOf(newSlots)));
+	}
+
+	private void handleAdminPvP(Player player, String[] args) {
+		if (args.length < 2) {
+			usage(player, "/clan admin pvp <clan>");
+			return;
+		}
+
+		String clanName = args[1];
+		Clan clan = cm.getClanByName(clanName);
+		if (clan == null) {
+			player.sendMessage(cfg.getMessage("admin.pvp.not-found", "{clan}", clanName));
+			return;
+		}
+
+		// Toggle: invierte el estado actual
+		boolean newState = !clan.isPvpEnabled();
+		clan.setPvpEnabled(newState);
+		persist(clan);
+
+		String msgKey = newState ? "admin.pvp.enabled" : "admin.pvp.disabled";
+		player.sendMessage(cfg.getMessage(msgKey, "{clan}", clan.getName()));
 	}
 
 	private void handleAlly(Player player, String[] args) {
@@ -743,7 +855,6 @@ public class AdminCommandExecutor implements CommandExecutor, TabCompleter {
 			final Clan finalClan2 = clan2;
 			cm.breakAlliance(clan1.getId(), clan2.getId())
 					.thenRun(() -> plugin.getServer().getScheduler().runTask(plugin, () -> {
-						// Desactivar chat de aliados si los clanes ya no tienen aliados
 						disableAllyChatIfNeeded(finalClan1);
 						disableAllyChatIfNeeded(finalClan2);
 						player.sendMessage(cfg.getMessage("admin.ally.removed", "{clan1}", name1, "{clan2}", name2));
@@ -805,29 +916,24 @@ public class AdminCommandExecutor implements CommandExecutor, TabCompleter {
 
 		if (args.length == 1) {
 			Arrays.asList("help", "delete", "rename", "prefix", "setleader", "add", "kick", "setrank", "cooldown",
-					"points", "kills", "level", "xp", "slots", "ally", "reset", "reload").stream()
+					"points", "kills", "deaths", "level", "xp", "slots", "ally", "pvp", "reset", "reload").stream()
 					.filter(s -> s.startsWith(partial)).forEach(result::add);
 
 		} else if (args.length == 2) {
 			switch (args[0].toLowerCase()) {
 			case "points":
 			case "kills":
+			case "deaths":
 				Arrays.asList("add", "remove", "set").stream().filter(s -> s.startsWith(partial)).forEach(result::add);
 				break;
 			case "level":
-				if ("set".startsWith(partial))
-					result.add("set");
-				break;
 			case "xp":
-				Arrays.asList("add", "set").stream().filter(s -> s.startsWith(partial)).forEach(result::add);
+			case "slots":
+				Arrays.asList("add", "remove", "set").stream().filter(s -> s.startsWith(partial)).forEach(result::add);
 				break;
 			case "reset":
 				cm.getAllClans().stream().filter(c -> c.getName().toLowerCase().startsWith(partial))
 						.forEach(c -> result.add(c.getName()));
-				break;
-			case "slots":
-				if ("set".startsWith(partial))
-					result.add("set");
 				break;
 			case "ally":
 				Arrays.asList("add", "remove").stream().filter(s -> s.startsWith(partial)).forEach(result::add);
@@ -850,6 +956,10 @@ public class AdminCommandExecutor implements CommandExecutor, TabCompleter {
 						.filter(p -> p.getName().toLowerCase().startsWith(partial))
 						.forEach(p -> result.add(p.getName()));
 				break;
+			case "pvp":
+				cm.getAllClans().stream().filter(c -> c.getName().toLowerCase().startsWith(partial))
+						.forEach(c -> result.add(c.getName()));
+				break;
 			}
 		} else if (args.length == 3) {
 			switch (args[0].toLowerCase()) {
@@ -871,6 +981,7 @@ public class AdminCommandExecutor implements CommandExecutor, TabCompleter {
 				break;
 			case "points":
 			case "kills":
+			case "deaths":
 			case "level":
 			case "xp":
 			case "slots":

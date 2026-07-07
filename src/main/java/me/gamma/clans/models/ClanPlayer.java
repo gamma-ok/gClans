@@ -6,21 +6,16 @@ public class ClanPlayer {
 
 	private final UUID uuid;
 	private String name;
-
 	private String clanId;
 	private Rank rank;
-
 	private boolean clanChatActive;
 	private boolean allyChatActive;
-
 	private int kills;
 	private int deaths;
 	private double points;
 	private int killstreak;
 	private int bestKillstreak;
-
 	private int clanKills;
-
 	private long createCooldownUntil;
 
 	public ClanPlayer(UUID uuid, String name, String clanId, Rank rank, int kills, int deaths, double points,

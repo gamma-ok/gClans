@@ -14,7 +14,7 @@ public class UninviteCommand extends AbstractClanCommand {
 
 	@Override
 	protected void execute(Player player, ClanPlayer cp, String[] args) {
-		if (!requireArgs(player, args, 1))
+		if (!requireArgs(player, args, 1, "uninvite"))
 			return;
 
 		Player target = plugin.getServer().getPlayer(args[0]);

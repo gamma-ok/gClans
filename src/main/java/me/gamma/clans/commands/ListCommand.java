@@ -61,12 +61,12 @@ public class ListCommand extends AbstractClanCommand {
 		List<String> lines = cfg.getMessages().getStringList("list.lines");
 
 		if (lines.isEmpty()) {
-			send(player, "&eClan List &8(Page &f" + page + "&8/&f" + totalPages + "&8)");
+			send(player, "&eLista de Clanes &8(Página &f" + page + "&8/&f" + totalPages + "&8)");
 			for (String entryLine : entries.toString().split("\n")) {
 				send(player, entryLine);
 			}
 			if (!isLast)
-				send(player, "&7To view other pages, use &e/clan list " + nextPage + "&7.");
+				send(player, "&7Para ver otras páginas, usa &e/clan list " + nextPage + "&7.");
 			return;
 		}
 

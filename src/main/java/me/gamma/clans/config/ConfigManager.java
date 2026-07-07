@@ -11,12 +11,10 @@ import java.nio.charset.StandardCharsets;
 public class ConfigManager {
 
 	private final Clans plugin;
-
 	private FileConfiguration config;
 	private FileConfiguration messages;
 	private FileConfiguration help;
 	private FileConfiguration adminHelp;
-
 	private File configFile;
 	private File messagesFile;
 	private File helpFile;
@@ -184,7 +182,6 @@ public class ConfigManager {
 		return config.getInt("levels.max-level", 50);
 	}
 
-	/** Slots a añadir al alcanzar exactamente ese nivel (desde tabla en config). */
 	public int getSlotsForLevel(int level) {
 		return config.getInt("levels.slots-per-level." + level, 0);
 	}
@@ -251,6 +248,14 @@ public class ConfigManager {
 
 	public String getPrefixPlaceholderColor() {
 		return config.getString("placeholders.prefix-color", "f");
+	}
+
+	public boolean getBoolean(String path, boolean def) {
+		return config.getBoolean(path, def);
+	}
+
+	public String getString(String path, String def) {
+		return config.getString(path, def);
 	}
 
 	public String getNoClanZero() {

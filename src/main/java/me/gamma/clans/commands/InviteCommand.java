@@ -19,7 +19,7 @@ public class InviteCommand extends AbstractClanCommand {
 
 	@Override
 	protected void execute(Player player, ClanPlayer cp, String[] args) {
-		if (!requireArgs(player, args, 1))
+		if (!requireArgs(player, args, 1, "invite"))
 			return;
 
 		Player target = plugin.getServer().getPlayer(args[0]);
@@ -79,7 +79,7 @@ public class InviteCommand extends AbstractClanCommand {
 			TextComponent clickable = new TextComponent(marker);
 			clickable.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/clan accept " + clanName));
 			clickable.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-					new ComponentBuilder(ConfigManager.color("&aHaz click para unirte al clan &e" + clanName))
+					new ComponentBuilder(ConfigManager.color("&aHaz clic para unirte al clan &e" + clanName))
 							.create()));
 
 			TextComponent after = new TextComponent(infoText.substring(markerIdx + marker.length()));

@@ -14,8 +14,9 @@ public class DemoteCommand extends AbstractClanCommand {
 
 	@Override
 	protected void execute(Player player, ClanPlayer cp, String[] args) {
-		if (!requireArgs(player, args, 1))
+		if (!requireArgs(player, args, 1, "demote"))
 			return;
+
 		if (args[0].equalsIgnoreCase(player.getName())) {
 			msg(player, "rank.demote.cannot-self");
 			return;

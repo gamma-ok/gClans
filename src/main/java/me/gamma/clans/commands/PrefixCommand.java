@@ -14,7 +14,7 @@ public class PrefixCommand extends AbstractClanCommand {
 
 	@Override
 	protected void execute(Player player, ClanPlayer cp, String[] args) {
-		if (!requireArgs(player, args, 1))
+		if (!requireArgs(player, args, 1, "prefix"))
 			return;
 		String newPrefix = String.join(" ", args);
 		String error = cm.validatePrefix(newPrefix);
