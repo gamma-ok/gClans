@@ -7,7 +7,7 @@
 pages:
   page-1:
     - '&7&m-------------------------------------------------'
-    - '&6&lClan Help &7(Page &f{page}/{max}&7)'
+    - '&6&lClan Help &7(Página {page}/{max})'
     - ' '
     - '&6Comandos Generales:'
     - '  &e/clan create <name> [prefix] &7- &fCrea un nuevo clan.'
@@ -21,7 +21,7 @@ pages:
 
   page-2:
     - '&7&m-------------------------------------------------'
-    - '&6&lClan Help &7(Page &f{page}/{max}&7)'
+    - '&6&lClan Help &7(Página {page}/{max})'
     - ' '
     - '&6Comandos de Información:'
     - '  &e/clan info [clan/player] &7- &fVer información de un clan o jugador.'
@@ -36,7 +36,7 @@ pages:
 
   page-3:
     - '&7&m-------------------------------------------------'
-    - '&6&lClan Help &7(Page &f{page}/{max}&7)'
+    - '&6&lClan Help &7(Página {page}/{max})'
     - ' '
     - '&6Comandos de CoLíder:'
     - '  &e/clan invite <player> &7- &fInvita a un jugador a tu clan.'
@@ -51,7 +51,7 @@ pages:
 
   page-4:
     - '&7&m-------------------------------------------------'
-    - '&6&lClan Help &7(Page &f{page}/{max}&7)'
+    - '&6&lClan Help &7(Página {page}/{max})'
     - ' '
     - '&6Comandos de Líder:'
     - '  &e/clan disband [confirm] &7- &fElimina tu clan.'

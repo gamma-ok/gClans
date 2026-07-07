@@ -7,7 +7,7 @@
 pages:
   page-1:
     - '&7&m-------------------------------------------------'
-    - '&6&lClan Admin Help &7(Page &f{page}/{max}&7)'
+    - '&6&lClan Admin Help &7(Página {page}/{max})'
     - ' '
     - '&6Gestión de Clanes:'
     - '  &e/clan admin delete <clan> [confirm] &7- &fElimina un clan.'
@@ -21,7 +21,7 @@ pages:
 
   page-2:
     - '&7&m-------------------------------------------------'
-    - '&6&lClan Admin Help &7(Page &f{page}/{max}&7)'
+    - '&6&lClan Admin Help &7(Página {page}/{max})'
     - ' '
     - '&6Gestión de Miembros:'
     - '  &e/clan admin add <jugador> <clan> &7- &fAñade jugador a un clan.'
@@ -36,7 +36,7 @@ pages:
 
   page-3:
     - '&7&m-------------------------------------------------'
-    - '&6&lClan Admin Help &7(Page &f{page}/{max}&7)'
+    - '&6&lClan Admin Help &7(Página {page}/{max})'
     - ' '
     - '&6Gestión de Estadísticas:'
     - '  &e/clan admin points <add/remove/set> <clan> <count> &7- &fModifica puntos.'
@@ -53,7 +53,7 @@ pages:
 
   page-4:
     - '&7&m-------------------------------------------------'
-    - '&6&lClan Admin Help &7(Page &f{page}/{max}&7)'
+    - '&6&lClan Admin Help &7(Página {page}/{max})'
     - ' '
     - '&6Gestión de Alianzas:'
     - '  &e/clan admin ally add <clan1> <clan2> &7- &fFuerza una alianza.'
