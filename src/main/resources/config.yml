@@ -14,9 +14,9 @@ database:
     password: ''
     pool-size: 10
   tables:
-    clans:   gclans_clans
+    clans: gclans_clans
     members: gclans_members
-    allies:  gclans_allies
+    allies: gclans_allies
 
 clans:
   name-min-length: 3
