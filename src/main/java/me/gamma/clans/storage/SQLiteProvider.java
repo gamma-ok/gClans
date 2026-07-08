@@ -4,7 +4,6 @@ import me.gamma.clans.Clans;
 import me.gamma.clans.models.Clan;
 import me.gamma.clans.models.ClanPlayer;
 import me.gamma.clans.models.Rank;
-
 import java.io.File;
 import java.sql.*;
 import java.util.*;
@@ -17,7 +16,6 @@ public class SQLiteProvider implements StorageProvider {
 	private final Clans plugin;
 	private Connection connection;
 	private final ExecutorService executor = Executors.newSingleThreadExecutor(r -> new Thread(r, "gClans-DB"));
-
 	private final String TC, TM, TA;
 
 	public SQLiteProvider(Clans plugin) {
@@ -366,5 +364,28 @@ public class SQLiteProvider implements StorageProvider {
 	@FunctionalInterface
 	interface SqlSupplier<T> {
 		T get() throws SQLException;
+	}
+	
+	@Override
+	public CompletableFuture<Void> loadAllMembersIntoClans(Map<String, Clan> clanById) {
+		return supply(() -> {
+			String sql = "SELECT uuid, clan_id, rank FROM " + TM
+					+ " WHERE clan_id IS NOT NULL AND rank IS NOT NULL";
+			try (Statement s = connection.createStatement();
+				 ResultSet rs = s.executeQuery(sql)) {
+				while (rs.next()) {
+					String clanId = rs.getString("clan_id");
+					String rankStr = rs.getString("rank");
+					String uuidStr = rs.getString("uuid");
+
+					Clan clan = clanById.get(clanId);
+					Rank rank = Rank.fromString(rankStr);
+					if (clan != null && rank != null) {
+						clan.addMember(UUID.fromString(uuidStr), rank);
+					}
+				}
+			}
+			return null;
+		});
 	}
 }

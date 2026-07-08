@@ -11,7 +11,7 @@ pages:
     - ' '
     - '&6Comandos Generales:'
     - '  &e/clan create <name> [prefix] &7- &fCrea un nuevo clan.'
-    - '  &e/clan accept <clan|player> &7- &fAcepta la invitación a un clan.'
+    - '  &e/clan accept <clan/player> &7- &fAcepta la invitación a un clan.'
     - '  &e/clan leave &7- &fAbandona tu clan actual.'
     - '  &e/clan top [points/kills/level] &7- &fVer el ranking de mejores clanes.'
     - '  &e/clan stats [clan] &7- &fVer estadísticas del clan.'

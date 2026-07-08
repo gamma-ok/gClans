@@ -6,7 +6,6 @@ import me.gamma.clans.models.ClanPlayer;
 import me.gamma.clans.models.Rank;
 import me.gamma.clans.storage.StorageProvider;
 import org.bukkit.entity.Player;
-
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,7 +38,10 @@ public class ClanManager {
 				futures.add(allyFuture);
 			}
 			return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-		}).exceptionally(ex -> {
+		})
+		// Cargar miembros de todos los clanes
+		.thenCompose(v -> storage.loadAllMembersIntoClans(clanById))
+		.exceptionally(ex -> {
 			plugin.getLogger().severe("Error cargando clanes: " + ex.getMessage());
 			return null;
 		});

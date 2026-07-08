@@ -67,13 +67,14 @@ public class InfoCommand extends AbstractClanCommand {
 		final String offlineColor = cfg.getString("member-list.offline-color", "7");
 		final boolean showClanKills = cfg.getBoolean("member-list.show-clan-kills", true);
 		final boolean tooltipEnabled = cfg.getBoolean("member-list.tooltip-enabled", true);
-		final String killsFormat = cfg.getString("member-list.kills-format", "&7[&c{kills}&7]");
+		final String killsFormat = cfg.getString("member-list.kills-format", "&e[&a{kills}&e]");
 
 		// Listas para cada rango
 		final List<TextComponent> leaderList = new ArrayList<>();
 		final List<TextComponent> coLeaderList = new ArrayList<>();
 		final List<TextComponent> captainList = new ArrayList<>();
 		final List<TextComponent> memberList = new ArrayList<>();
+		final List<TextComponent> allyList = new ArrayList<>();
 
 		// Construcción de componentes con hover y kills
 		for (Map.Entry<UUID, Rank> e : clan.getMembers().entrySet()) {
@@ -114,6 +115,19 @@ public class InfoCommand extends AbstractClanCommand {
 				memberList.add(nameComponent);
 			}
 		}
+		
+		// Lista de aliados con colores on/off
+		for (String allyId : clan.getAllies()) {
+		    Clan allyClan = cm.getClan(allyId);
+		    if (allyClan != null) {
+		        String allyName = allyClan.getName();
+		        // Verificar si el clan aliado tiene al menos un miembro conectado
+		        int allyOnline = cm.getOnlineCount(allyClan);
+		        String allyColor = allyOnline > 0 ? "§" + onlineColor : "§" + offlineColor;
+		        TextComponent allyComponent = new TextComponent(allyColor + allyName);
+		        allyList.add(allyComponent);
+		    }
+		}
 
 		final String prefixStr = clan.hasCustomPrefix() ? clan.getColoredPrefix() : null;
 		final String pvpStr = clan.isPvpEnabled() ? cfg.getRaw("info.pvp-on") : cfg.getRaw("info.pvp-off");
@@ -135,34 +149,39 @@ public class InfoCommand extends AbstractClanCommand {
 				List<String> lines = cfg.getMessages().getStringList("info.lines");
 
 				if (lines.isEmpty()) {
-					sendSimpleInfo(player, clanName, online, total, dateStr, leaderList, coLeaderList, captainList,
-							memberList, prefixStr, totalPoints, posStr, pvpStr);
+					sendSimpleInfo(player, clanName, online, total, dateStr,
+					        leaderList, coLeaderList, captainList, memberList,
+					        allyList, prefixStr, totalPoints, posStr, pvpStr);
 					return;
 				}
 
 				// Enviar cada línea con soporte condicional
 				for (String line : lines) {
-					// Verificar condicionales {?coleaders}, {?captains}, {?members}, {?prefix}
+					// Verificar condicionales {?coleaders}, {?captains}, {?members}, {?allys}, {?prefix}
 					boolean shouldShow = true;
 					String cleanLine = line;
 
 					if (line.startsWith("{?coleaders}")) {
-						shouldShow = !coLeaderList.isEmpty();
-						cleanLine = line.substring("{?coleaders}".length());
+					    shouldShow = !coLeaderList.isEmpty();
+					    cleanLine = line.substring("{?coleaders}".length());
 					} else if (line.startsWith("{?captains}")) {
-						shouldShow = !captainList.isEmpty();
-						cleanLine = line.substring("{?captains}".length());
+					    shouldShow = !captainList.isEmpty();
+					    cleanLine = line.substring("{?captains}".length());
 					} else if (line.startsWith("{?members}")) {
-						shouldShow = !memberList.isEmpty();
-						cleanLine = line.substring("{?members}".length());
+					    shouldShow = !memberList.isEmpty();
+					    cleanLine = line.substring("{?members}".length());
+					} else if (line.startsWith("{?allys}")) {
+					    shouldShow = !allyList.isEmpty();
+					    cleanLine = line.substring("{?allys}".length());
 					} else if (line.startsWith("{?prefix}")) {
-						shouldShow = prefixStr != null;
-						cleanLine = line.substring("{?prefix}".length());
+					    shouldShow = prefixStr != null;
+					    cleanLine = line.substring("{?prefix}".length());
 					}
 
 					if (shouldShow) {
-						sendFormattedLine(player, cleanLine, clanName, online, total, dateStr, leaderList, coLeaderList,
-								captainList, memberList, prefixStr, totalPoints, posStr, pvpStr);
+						sendFormattedLine(player, cleanLine, clanName, online, total, dateStr,
+						        leaderList, coLeaderList, captainList, memberList,
+						        allyList, prefixStr, totalPoints, posStr, pvpStr);
 					}
 				}
 			});
@@ -192,9 +211,10 @@ public class InfoCommand extends AbstractClanCommand {
 		return sb.toString();
 	}
 
-	private void sendFormattedLine(Player player, String line, String clanName, int online, int total, String dateStr,
-			List<TextComponent> leaders, List<TextComponent> coLeaders, List<TextComponent> captains,
-			List<TextComponent> members, String prefix, double points, String pos, String pvp) {
+	private void sendFormattedLine(Player player, String line, String clanName, int online, int total,
+            String dateStr, List<TextComponent> leaders, List<TextComponent> coLeaders,
+            List<TextComponent> captains, List<TextComponent> members,
+            List<TextComponent> allys, String prefix, double points, String pos, String pvp) {
 
 		String processed = line.replace("{clan}", clanName).replace("{online}", String.valueOf(online))
 				.replace("{total}", String.valueOf(total)).replace("{date}", dateStr)
@@ -209,6 +229,7 @@ public class InfoCommand extends AbstractClanCommand {
 			int coleadersIdx = remaining.indexOf("{coleaders}");
 			int captainsIdx = remaining.indexOf("{captains}");
 			int membersIdx = remaining.indexOf("{members}");
+			int allysIdx = remaining.indexOf("{allys}");
 
 			int idx = -1;
 			String found = null;
@@ -228,6 +249,10 @@ public class InfoCommand extends AbstractClanCommand {
 				idx = membersIdx;
 				found = "{members}";
 			}
+			if (allysIdx != -1 && (idx == -1 || allysIdx < idx)) {
+	            idx = allysIdx;
+	            found = "{allys}";
+	        }
 
 			if (idx == -1) {
 				addLegacyText(fullLine, remaining);
@@ -252,6 +277,9 @@ public class InfoCommand extends AbstractClanCommand {
 			case "{members}":
 				addComponentList(fullLine, members, cfg.getRaw("info.no-members"));
 				break;
+			case "{allys}":
+			    addComponentList(fullLine, allys, cfg.getRaw("info.no-allys"));
+			    break;
 			}
 
 			remaining = remaining.substring(idx + len);
@@ -300,8 +328,9 @@ public class InfoCommand extends AbstractClanCommand {
 	}
 
 	private void sendSimpleInfo(Player player, String clanName, int online, int total, String dateStr,
-			List<TextComponent> leaders, List<TextComponent> coLeaders, List<TextComponent> captains,
-			List<TextComponent> members, String prefix, double points, String pos, String pvp) {
+            List<TextComponent> leaders, List<TextComponent> coLeaders,
+            List<TextComponent> captains, List<TextComponent> members,
+            List<TextComponent> allys, String prefix, double points, String pos, String pvp) {
 		player.sendMessage("§7§m-------------------------------------------------");
 		player.sendMessage("§6§l" + clanName + " §7[" + online + "§7/" + total + "§7] §f- §eCreado: §f" + dateStr);
 		player.sendMessage("§eLíder: " + joinNames(leaders));
@@ -311,6 +340,8 @@ public class InfoCommand extends AbstractClanCommand {
 			player.sendMessage("§eCapitán: " + joinNames(captains));
 		if (!members.isEmpty())
 			player.sendMessage("§eMiembros: " + joinNames(members));
+		if (!allys.isEmpty())
+		    player.sendMessage("§eAliados: " + joinNames(allys));
 		if (prefix != null)
 			player.sendMessage("§ePrefix: " + prefix);
 		player.sendMessage("§ePuntos: §f" + formatPoints(points));

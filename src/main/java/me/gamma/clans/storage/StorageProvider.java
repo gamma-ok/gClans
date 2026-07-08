@@ -3,8 +3,8 @@ package me.gamma.clans.storage;
 import me.gamma.clans.models.Clan;
 import me.gamma.clans.models.ClanPlayer;
 import me.gamma.clans.models.Rank;
-
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -29,4 +29,5 @@ public interface StorageProvider {
 	CompletableFuture<List<Clan>> getTopByPoints(int limit);
 	CompletableFuture<List<Clan>> getTopByKills(int limit);
 	CompletableFuture<List<Clan>> getTopByLevel(int limit);
+	CompletableFuture<Void> loadAllMembersIntoClans(Map<String, Clan> clanById);
 }
